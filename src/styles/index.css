@@ -1,0 +1,91 @@
+/* *,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100dvh;
+}
+
+body {
+  margin: 0;
+} */
+
+/* RESET */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+/* ROOT */
+html,
+body,
+#root {
+  min-height: 100dvh;
+}
+
+/* BODY */
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+
+  background-color: var(--color-bg);
+  color: var(--color-text);
+
+  overflow-x: hidden;
+}
+
+/* MEDIA */
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* FORMS */
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+/* FOCUS */
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* VARIABLES */
+:root {
+  --color-primary: #2196f3;
+  --color-bg: #ffffff;
+  --color-text: #111111;
+  --color-border: #e0e0e0;
+}
+
+/* DARK MODE */
+[data-theme="dark"] {
+  --color-bg: #121212;
+  --color-text: #ffffff;
+  --color-border: #333;
+}
