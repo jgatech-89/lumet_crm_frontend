@@ -10,16 +10,14 @@ import type {
   VerifyCodePayload,
 } from "../types/auth.types";
 
-export type AuthMessagePayload = {
+export type CorreoAuthResponse = {
   correo_auth?: string | null;
 };
 
-export type AuthMessageResponse = ApiResponse<AuthMessagePayload>;
-
 const AUTH_PREFIX = "/auth";
 
-export async function loginRequest(body: LoginCredentials): Promise<AuthMessageResponse> {
-  const { data } = await apiClient.post<AuthMessageResponse>(`${AUTH_PREFIX}/login/`, body);
+export async function loginRequest(body: LoginCredentials): Promise<ApiResponse<CorreoAuthResponse>> {
+  const { data } = await apiClient.post<ApiResponse<CorreoAuthResponse>>(`${AUTH_PREFIX}/login/`, body);
   return data;
 }
 
@@ -31,46 +29,42 @@ export async function verifyCodeRequest(body: VerifyCodePayload): Promise<ApiRes
   return data;
 }
 
-export async function resendCodeRequest(email: string): Promise<AuthMessageResponse> {
-  const { data } = await apiClient.post<AuthMessageResponse>(`${AUTH_PREFIX}/resend-code/`, {
+export async function resendCodeRequest(email: string): Promise<ApiResponse<CorreoAuthResponse>> {
+  const { data } = await apiClient.post<ApiResponse<CorreoAuthResponse>>(`${AUTH_PREFIX}/resend-code/`, {
     email,
   });
   return data;
 }
 
-export async function fetchMeRequest(): Promise<AuthUser> {
+export async function fetchMeRequest(): Promise<ApiResponse<AuthUser>> {
   const { data } = await apiClient.get<ApiResponse<AuthUser>>(`${AUTH_PREFIX}/me/`);
-  if (data.data === null) {
-    throw new Error(data.message || "No se pudo cargar el usuario");
-  }
-  return data.data;
+  return data;
 }
 
 export async function forgotPasswordRequest(
   body: ForgotPasswordRequestPayload,
-): Promise<AuthMessageResponse> {
-  const { data } = await apiClient.post<AuthMessageResponse>(
+): Promise<ApiResponse<CorreoAuthResponse>> {
+  const { data } = await apiClient.post<ApiResponse<CorreoAuthResponse>>(
     `${AUTH_PREFIX}/forgot-password/request/`,
     body,
   );
   return data;
 }
 
-export async function forgotPasswordVerifyRequest(body: ForgotPasswordVerifyPayload): Promise<string> {
+export async function forgotPasswordVerifyRequest(
+  body: ForgotPasswordVerifyPayload,
+): Promise<ApiResponse<{ token: string }>> {
   const { data } = await apiClient.post<ApiResponse<{ token: string }>>(
     `${AUTH_PREFIX}/forgot-password/verify/`,
     { email: body.email, code: body.codigo },
   );
-  if (data.data === null || !data.data.token) {
-    throw new Error(data.message || "Código inválido");
-  }
-  return data.data.token;
+  return data;
 }
 
 export async function forgotPasswordSetRequest(
   body: ForgotPasswordSetPayload,
-): Promise<AuthMessageResponse> {
-  const { data } = await apiClient.post<AuthMessageResponse>(
+): Promise<ApiResponse<CorreoAuthResponse>> {
+  const { data } = await apiClient.post<ApiResponse<CorreoAuthResponse>>(
     `${AUTH_PREFIX}/forgot-password/set/`,
     body,
   );

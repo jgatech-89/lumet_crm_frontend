@@ -35,8 +35,9 @@ export function SnackbarProvider({ children }: { children: ReactNode }) {
   );
   
   const showError = useCallback(
-    (msg: string, duration: number = 9000) => showSnackbar(msg, "error", duration),
-    [showSnackbar, duration],
+    (msg: string, hideDurationMs: number = 9000) =>
+      showSnackbar(msg, "error", hideDurationMs),
+    [showSnackbar],
   );
   
   const showInfo = useCallback(
