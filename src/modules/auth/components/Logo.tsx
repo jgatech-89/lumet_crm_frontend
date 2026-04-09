@@ -1,11 +1,6 @@
 import { Box, Typography } from "@mui/material";
-
 import logoIcon from "@/assets/logo-lumet.png";
 
-/**
- * Réplica lumet_beta `Logo.jsx`. Texto usa `theme.palette.text.primary`.
- * `size`: medium → fontSize 24, iconHeight ≈ 56 (24 * 2.35).
- */
 export function Logo({ size = "medium" }: { size?: "small" | "medium" }) {
   const isSmall = size === "small";
   const fontSize = isSmall ? 20 : 24;
@@ -37,7 +32,7 @@ export function Logo({ size = "medium" }: { size?: "small" | "medium" }) {
           lineHeight: 1,
         }}
       >
-        Lumet
+        Lumet.pro
       </Typography>
     </Box>
   );

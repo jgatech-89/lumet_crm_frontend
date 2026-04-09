@@ -74,7 +74,7 @@ export function LoginLeftPanel() {
             },
           }}
         >
-          Lumet
+          Lumet.pro
         </Typography>
         <Typography
           variant="body1"
