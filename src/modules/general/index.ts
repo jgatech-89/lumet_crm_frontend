@@ -7,3 +7,6 @@ export type { ButtonPreset, ButtonPresetKey } from './buttons/buttonPresets';
 export { Navbar } from "./Navbar/components/Navbar";
 export { Footer } from "./Footer/components/Footer";
 export { Sidebar } from "./Sidebar/components/Sidebar";
+export { Layout } from "./layout/components/Layout";
+// export { ConfirmModal } from "./modal/ConfirmModal";
+// export type { ConfirmModalProps } from "./modal/ConfirmModal.types";

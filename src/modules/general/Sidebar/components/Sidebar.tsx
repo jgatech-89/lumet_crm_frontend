@@ -19,7 +19,7 @@ export const Sidebar = () => {
           ))}
         </List>
       ) : (
-        <Typography variant="body2" sx={{ color: "#ffffff", p: 2 }}>
+        <Typography variant="body2" sx={{ color: "#616161", p: 2 }}>
           No hay elementos
         </Typography>
       )}

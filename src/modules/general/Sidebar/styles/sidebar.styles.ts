@@ -1,7 +1,13 @@
 export const sidebarStyles = {
   container: {
     width: 250,
-    height: "100vh",
+    height: "auto",
+    minHeight: 0,
+    flexShrink: 0,
+    alignSelf: "stretch",
+    display: "flex",
+    flexDirection: "column",
+    overflowY: "auto",
     bgcolor: "#ffffff", 
     p: 2,
     borderRight: "1px solid #eee",
