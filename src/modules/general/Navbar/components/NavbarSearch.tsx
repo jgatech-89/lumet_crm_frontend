@@ -3,6 +3,7 @@ import InputAdornment from "@mui/material/InputAdornment";
 import SearchIcon from "@mui/icons-material/Search";
 import { useTheme } from "@mui/material/styles";
 import { useState } from "react";
+import type React from "react";
 
 interface NavbarSearchProps {
   placeholder?: string;

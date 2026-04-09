@@ -5,3 +5,4 @@ export type { ActionIconButtonProps } from './buttons/actionIconButton';
 export { BUTTON_PRESETS, getButtonPreset } from './buttons/buttonPresets';
 export type { ButtonPreset, ButtonPresetKey } from './buttons/buttonPresets';
 export { Navbar } from "./Navbar/components/Navbar";
+export { Footer } from "./Footer/components/Footer";
