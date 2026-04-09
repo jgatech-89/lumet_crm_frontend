@@ -220,11 +220,16 @@ export function useLoginScreen() {
       setApiFieldErrors([]);
       setForgotOtpLoading(true);
       try {
-        const token = await forgotPasswordVerifyRequest({
+        const res = await forgotPasswordVerifyRequest({
           email: forgotEmail.trim(),
           codigo: code,
         });
-        setResetToken(token);
+        const payload = res.data;
+        if (!payload?.token) {
+          showAuthError(res.message || "Código inválido");
+          return;
+        }
+        setResetToken(payload.token);
         setStep("forgot-new-password");
         setNewPassword("");
         setConfirmPassword("");

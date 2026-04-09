@@ -8,6 +8,7 @@ import {
 } from "react";
 import { useNavigate } from "react-router-dom";
 
+import type { ApiResponse } from "@/core/api/types";
 import { fetchMeRequest } from "@/modules/auth/api/authApi";
 import type { AuthTokens, AuthUser } from "@/modules/auth/types/auth.types";
 
@@ -27,10 +28,17 @@ function clearMeCache() {
   meCache = null;
 }
 
+function unwrapMeResponse(res: ApiResponse<AuthUser>): AuthUser {
+  if (res.data === null) {
+    throw new Error(res.message || "No se pudo cargar el usuario");
+  }
+  return res.data;
+}
+
 function fetchMeOnceForCurrentToken() {
   const token = getAccessToken();
   if (!token) {
-    return fetchMeRequest();
+    return fetchMeRequest().then(unwrapMeResponse);
   }
 
   if (meCache?.token === token) {
@@ -42,6 +50,7 @@ function fetchMeOnceForCurrentToken() {
   }
 
   const promise = fetchMeRequest()
+    .then(unwrapMeResponse)
     .then((user) => {
       meCache = { token, user };
       return user;
