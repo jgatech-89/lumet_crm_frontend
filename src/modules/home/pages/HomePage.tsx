@@ -1,6 +1,7 @@
 import { Box } from "@mui/material";
 import { Navbar } from "./../../general/Navbar/components/Navbar";
 import { Footer } from "./../../general/Footer/components/Footer";
+import { Sidebar } from "../../general/Sidebar/components/Sidebar";
 
 export function HomePage() {
   const handleSearch = (query: string) => {
@@ -10,15 +11,19 @@ export function HomePage() {
   };
 
   return (
-    <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      <Navbar
-        searchPlaceholder="Buscar por cédula "
-        onSearch={handleSearch}
-      />
+    <Box sx={{ display: "flex", minHeight: "100vh" }}>
+      
 
-      <Box sx={{ flexGrow: 1 }} />
+      <Box sx={{ flex: 1, display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+        <Navbar
+          searchPlaceholder="Buscar por cédula"
+          onSearch={handleSearch}
+        />
+       <Sidebar />
+        <Box sx={{ flex: 1 }} />
 
-      <Footer />
+        <Footer />
+      </Box>
     </Box>
   );
 }
