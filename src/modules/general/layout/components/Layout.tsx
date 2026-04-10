@@ -27,24 +27,29 @@ export const Layout = ({
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
-  const handleOpenSidebar = () => {
-    setMobileSidebarOpen(true);
-  };
-
-  const handleCloseSidebar = () => {
-    setMobileSidebarOpen(false);
-  };
+  const handleOpenSidebar = () => setMobileSidebarOpen(true);
+  const handleCloseSidebar = () => setMobileSidebarOpen(false);
 
   const renderDesktopSidebar = showSidebar && !isMobile;
   const renderMobileSidebar = showSidebar && isMobile;
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh",
+        backgroundColor: "#f9fafb", 
+      }}
+    >
       <Box sx={{ flexShrink: 0 }}>
-        <Navbar searchPlaceholder={searchPlaceholder} onSearch={onSearch} />
+        <Navbar
+          searchPlaceholder={searchPlaceholder}
+          onSearch={onSearch}
+        />
       </Box>
 
-      {renderMobileSidebar && !mobileSidebarOpen ? (
+      {renderMobileSidebar && !mobileSidebarOpen && (
         <IconButton
           size="small"
           onClick={handleOpenSidebar}
@@ -59,16 +64,14 @@ export const Layout = ({
             border: "1px solid #E0E0E0",
             bgcolor: "#FFFFFF",
             boxShadow: "0px 2px 8px rgba(0,0,0,0.12)",
-            "&:hover": {
-              bgcolor: "#F5F5F5",
-            },
+            "&:hover": { bgcolor: "#F5F5F5" },
           }}
         >
           <ChevronRight fontSize="small" />
         </IconButton>
-      ) : null}
+      )}
 
-      {renderMobileSidebar ? (
+      {renderMobileSidebar && (
         <Drawer
           anchor="left"
           open={mobileSidebarOpen}
@@ -92,16 +95,44 @@ export const Layout = ({
           </Box>
           <Sidebar />
         </Drawer>
-      ) : null}
+      )}
 
       <Box sx={{ display: "flex", flex: 1, minHeight: 0 }}>
-        {renderDesktopSidebar ? <Sidebar /> : null}
+        {renderDesktopSidebar && <Sidebar />}
 
-        <Box sx={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", minHeight: 0 }}>
-          <Box component="main" sx={{ flex: 1, minHeight: 0 }}>
-            {children}
+        <Box
+          sx={{
+            flex: 1,
+            minWidth: 0,
+            display: "flex",
+            flexDirection: "column",
+            minHeight: 0,
+          }}
+        >
+          <Box
+            component="main"
+            sx={{
+              flex: 1,
+              minHeight: 0,
+              p: { xs: 2, md: 3 }, 
+            }}
+          >
+            <Box
+              sx={{
+                width: "100%",
+                height: "100%",
+                backgroundColor: "#ffffff",
+                borderRadius: "12px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                padding: { xs: 2, md: 3 },
+                overflow: "auto",
+              }}
+            >
+              {children}
+            </Box>
           </Box>
-          {showFooter ? <Footer /> : null}
+
+          {showFooter && <Footer />}
         </Box>
       </Box>
     </Box>
