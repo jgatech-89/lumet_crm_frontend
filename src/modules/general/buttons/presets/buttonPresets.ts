@@ -1,5 +1,5 @@
 import type { SxProps, Theme } from '@mui/material/styles';
-import type { CustomButtonProps } from './buttons';
+import type { CustomButtonProps } from '../types/CustomButton.types';
 
 type CustomButtonVariant = NonNullable<CustomButtonProps['variant']>;
 
