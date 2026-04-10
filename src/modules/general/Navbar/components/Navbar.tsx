@@ -15,7 +15,7 @@ export const Navbar = ({ searchPlaceholder, onSearch }: NavbarProps) => {
       <StyledToolbar>
         <NavbarLogo />
 
-        <Box sx={{ ml: { xs: 4, sm: 8, md: 10 }, flex: 1 }}>
+        <Box sx={{ ml: { xs: 5, sm: 10, md: 14 }, flex: 1 }}>
           <NavbarSearch placeholder={searchPlaceholder} onSearch={onSearch} />
         </Box>
 
