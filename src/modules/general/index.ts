@@ -1,8 +1,37 @@
-export { CustomButton } from './buttons/buttons';
-export type { CustomButtonProps } from './buttons/buttons';
-export { ActionIconButton } from './buttons/actionIconButton';
-export type { ActionIconButtonProps } from './buttons/actionIconButton';
-export { BUTTON_PRESETS, getButtonPreset } from './buttons/buttonPresets';
-export type { ButtonPreset, ButtonPresetKey } from './buttons/buttonPresets';
 export { Navbar } from "./Navbar/components/Navbar";
 export { Footer } from "./Footer/components/Footer";
+
+// modal
+export {
+	CustomModal,
+	ConfirmModal,
+} from './modal';
+export type {
+	CustomModalProps,
+	ConfirmModalProps,
+} from './modal';
+
+// cargando
+export {
+	LinearLoader,
+	AppSkeleton,
+	LoadingButton,
+	FullPageSpinner,
+} from './loading';
+export type {
+	LinearLoaderProps,
+	AppSkeletonProps,
+	LoadingButtonProps,
+} from './loading';
+
+// botones
+export {
+	CustomButton,
+	ActionIconButton,
+	BUTTON_PRESETS,
+	getButtonPreset,
+} from './buttons';
+export type {
+	ButtonPreset,
+	ButtonPresetKey,
+} from './buttons';

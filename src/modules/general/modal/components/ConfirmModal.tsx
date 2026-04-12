@@ -1,4 +1,4 @@
-import { Button, Typography, Stack, Box, CircularProgress } from '@mui/material';
+import { Button, Typography, Stack, Box } from '@mui/material';
 import { WarningAmber as WarningIcon, Info as InfoIcon } from '@mui/icons-material';
 import { CustomModal } from './CustomModal';
 import { ConfirmModalProps } from '../types/ConfirmModal.types';
@@ -23,6 +23,7 @@ export const ConfirmModal = ({
   confirmText = 'Confirmar',
   cancelText = 'Cancelar',
   loading = false,
+  loadingText = 'Procesando...',
   variant = 'default',
   disableBackdropClose = true,
 }: ConfirmModalProps) => {
@@ -38,6 +39,8 @@ export const ConfirmModal = ({
       open={open}
       onClose={onClose}
       useMobileSheet={false}
+      actionLoading={loading}
+      actionLoadingLabel={loadingText}
       showCloseButton={false}
       disableBackdropClose={disableBackdropClose}
       maxWidth="xs"
@@ -77,10 +80,7 @@ export const ConfirmModal = ({
               },
             }}
           >
-            {loading ? (
-              <CircularProgress size={24} sx={{ color: 'inherit', mr: 1 }} />
-            ) : null}
-            {loading ? 'Procesando...' : confirmText}
+            {loading ? loadingText : confirmText}
           </Button>
 
           <Button

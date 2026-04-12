@@ -6,6 +6,7 @@ export const StyledDialog = styled(Dialog)(() => ({
     borderRadius: '16px',
     boxShadow: '0px 8px 30px rgba(0, 0, 0, 0.08)',
     padding: '0px',
+    position: 'relative',
     maxHeight: 'calc(100dvh - 32px)',
     display: 'flex',
     flexDirection: 'column',

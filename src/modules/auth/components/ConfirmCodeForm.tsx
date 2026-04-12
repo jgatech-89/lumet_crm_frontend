@@ -3,7 +3,7 @@ import { Box, Link, TextField, Typography, useTheme } from "@mui/material";
 import { alpha, type SxProps, type Theme } from "@mui/material/styles";
 
 import type { ApiError } from "@/core/api/types";
-import { LoadingButton } from "@/shared/ui/LoadingButton";
+import { LoadingButton } from "@/modules/general";
 
 import { darkUi } from "@/core/theme/darkUi";
 

@@ -16,4 +16,11 @@ export interface CustomModalProps
   actionsSx?: SxProps<Theme>;
   bottomBorderColor?: string;
   useMobileSheet?: boolean;
+  actionLoading?: boolean;
+  actionLoadingLabel?: string;
+  actionLoadingMode?: 'top' | 'overlay';
+  contentLoading?: boolean;
+  contentLoadingVariant?: 'skeleton' | 'linear';
+  contentLoadingLabel?: string;
+  contentSkeletonRows?: number;
 }

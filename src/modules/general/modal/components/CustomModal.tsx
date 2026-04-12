@@ -10,6 +10,7 @@ import {
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 import { isValidElement } from 'react';
+import { AppSkeleton, LinearLoader } from '@/modules/general';
 import { StyledDialog } from '../styles/CustomModal.styles';
 import { CustomModalProps } from '../types/CustomModal.types';
 
@@ -51,6 +52,13 @@ export const CustomModal = ({
   maxWidth = 'md',
   fullWidth = true,
   useMobileSheet = true,
+  actionLoading = false,
+  actionLoadingLabel = 'Procesando...',
+  actionLoadingMode = 'overlay',
+  contentLoading = false,
+  contentLoadingVariant = 'skeleton',
+  contentLoadingLabel = 'Cargando contenido...',
+  contentSkeletonRows = 5,
   showCloseButton = true,
   disableBackdropClose = false,
   contentSx,
@@ -263,7 +271,19 @@ export const CustomModal = ({
       )}
 
       <DialogContent sx={contentSx}>
-        {children}
+        {actionLoading && actionLoadingMode === 'top' ? (
+          <LinearLoader label={actionLoadingLabel} sx={{ mb: 1.5 }} />
+        ) : null}
+
+        {contentLoading ? (
+          contentLoadingVariant === 'linear' ? (
+            <LinearLoader label={contentLoadingLabel} />
+          ) : (
+            <AppSkeleton rows={contentSkeletonRows} showHeader={false} />
+          )
+        ) : (
+          children
+        )}
       </DialogContent>
 
       {actions && (
@@ -271,6 +291,26 @@ export const CustomModal = ({
           {actions}
         </DialogActions>
       )}
+
+      {actionLoading && actionLoadingMode === 'overlay' ? (
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 7,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            px: { xs: 2, sm: 3 },
+            bgcolor: 'rgba(255, 255, 255, 0.78)',
+            backdropFilter: 'blur(2px)',
+          }}
+        >
+          <Box sx={{ width: 'min(460px, 100%)' }}>
+            <LinearLoader label={actionLoadingLabel} />
+          </Box>
+        </Box>
+      ) : null}
     </StyledDialog>
   );
 };

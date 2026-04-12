@@ -9,6 +9,7 @@ export interface ConfirmModalProps {
   confirmText?: string;
   cancelText?: string;
   loading?: boolean;
+  loadingText?: string;
   variant?: 'default' | 'danger';
   disableBackdropClose?: boolean;
 }
