@@ -18,7 +18,7 @@ import { LoadingButton } from "@/shared/ui/LoadingButton";
 import { ConfirmCodeForm } from "../components/ConfirmCodeForm";
 import { LoginForm } from "../components/LoginForm";
 import { LoginLeftPanel } from "../components/LoginLeftPanel";
-import { Logo } from "../components/Logo";
+import { Logo } from "@/shared/ui/Logo";
 import { VisibilityIcon, VisibilityOffIcon } from "../components/PasswordVisibilityIcons";
 import { useLoginScreen } from "../hooks/useLoginScreen";
 
