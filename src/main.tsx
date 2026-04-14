@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 
 import { AuthProvider } from "@/core/auth/AuthProvider";
+import { ModulesProvider } from "@/core/modules/ModulesProvider";
 import { ThemeModeProvider } from "@/core/theme";
 import { SnackbarProvider } from "@/shared/context/SnackbarContext";
 
@@ -20,7 +21,9 @@ createRoot(rootEl).render(
       <ThemeModeProvider>
         <SnackbarProvider>
           <AuthProvider>
-            <App />
+            <ModulesProvider>
+              <App />
+            </ModulesProvider>
           </AuthProvider>
         </SnackbarProvider>
       </ThemeModeProvider>

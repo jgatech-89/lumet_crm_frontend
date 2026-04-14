@@ -1,4 +1,4 @@
-import { Layout } from "../../general";
+import { Layout } from "@/shared/layout";
 
 export function HomePage() {
   const handleSearch = (query: string) => {

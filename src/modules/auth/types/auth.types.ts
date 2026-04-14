@@ -3,6 +3,16 @@ export interface AuthTokens {
   refresh: string;
 }
 
+/** Coincide con `ValorGenericaListSerializer` en `/auth/me/`. */
+export interface AuthUserPerfil {
+  id: number;
+  nombre: string;
+  codigo: string;
+  fecha_creacion?: string;
+  valor_orden?: number;
+  valora?: string | null;
+}
+
 export interface AuthUser {
   id: number;
   tipo_identificacion: string;
@@ -14,7 +24,7 @@ export interface AuthUser {
   email: string;
   correo_auth: string | null;
   telefono: string | null;
-  perfil: string;
+  perfil: AuthUserPerfil;
   estado: string;
   verificado: boolean;
 }

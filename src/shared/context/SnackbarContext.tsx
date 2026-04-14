@@ -66,13 +66,15 @@ export function SnackbarProvider({ children }: { children: ReactNode }) {
         anchorOrigin={{ vertical: "top", horizontal: "left" }}
         sx={{
           "& .MuiSnackbarContent-root": { animation: "none" },
+          mt: 8,
+          ml: 2,
         }}
       >
         <Alert
           onClose={handleClose}
           severity={severity}
           variant="filled"
-          sx={{ width: "100%" }}
+          sx={{ width: "100%", lineHeight: 1.5, px: 2, py: 1.5 }}
         >
           {message}
         </Alert>

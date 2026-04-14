@@ -1,6 +1,12 @@
 import { createTheme } from "@mui/material/styles";
 
 import { darkUi } from "./darkUi";
+import {
+  transition,
+  PRESS_SCALE,
+  HOVER_LIFT,
+  FADE_IN_KEYFRAME,
+} from "./motion";
 
 declare module "@mui/material/styles" {
   interface Palette {
@@ -106,18 +112,13 @@ export function createAppTheme(mode: "light" | "dark") {
     spacing: 8,
     components: {
       MuiCssBaseline: {
-        styleOverrides: {
-          body: {
-            fontFeatureSettings: '"cv02", "cv03", "cv04", "cv11"',
-            ...(isDark
-              ? {
-                  WebkitFontSmoothing: "antialiased",
-                  MozOsxFontSmoothing: "grayscale",
-                  textRendering: "optimizeLegibility",
-                }
-              : {}),
-          },
-        },
+        styleOverrides: `
+          ${FADE_IN_KEYFRAME}
+          body {
+            font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+            ${isDark ? "  -webkit-font-smoothing: antialiased;\n            -moz-osx-font-smoothing: grayscale;\n            text-rendering: optimizeLegibility;" : ""}
+          }
+        `,
       },
       MuiPaper: {
         styleOverrides: {
@@ -149,7 +150,7 @@ export function createAppTheme(mode: "light" | "dark") {
             borderRadius: isDark ? "12px" : 12,
             backgroundColor: isDark ? darkUi.inputBg : paletteWhite,
             color: isDark ? darkUi.inputText : undefined,
-            transition: "border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease",
+            transition: transition(["border-color", "box-shadow", "background-color"]),
             "&:hover": isDark
               ? {
                   backgroundColor: darkUi.inputBgHover,
@@ -208,12 +209,15 @@ export function createAppTheme(mode: "light" | "dark") {
             textTransform: "none",
             borderRadius: 12,
             fontWeight: 600,
-            transition: "background-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease",
+            transition: transition(["background-color", "box-shadow", "transform", "filter"]),
             boxShadow: isDark ? "none" : "0 1px 2px rgba(0,0,0,0.06)",
             "&:hover": {
               boxShadow: isDark
                 ? "0 0 24px -4px rgba(33, 150, 243, 0.45)"
                 : "0 4px 12px rgba(33, 150, 243, 0.28)",
+            },
+            "&:active": {
+              transform: PRESS_SCALE,
             },
           },
           contained: {
@@ -251,16 +255,44 @@ export function createAppTheme(mode: "light" | "dark") {
           },
         },
       },
+      MuiListItemButton: {
+        styleOverrides: {
+          root: {
+            transition: transition(["background-color", "transform", "color"]),
+            "&:active": {
+              transform: PRESS_SCALE,
+            },
+          },
+        },
+      },
       MuiIconButton: {
         styleOverrides: {
-          root: isDark
-            ? {
-                transition: "background-color 0.15s ease, color 0.15s ease",
-                "&:hover": {
-                  backgroundColor: "rgba(255, 255, 255, 0.06)",
-                },
-              }
-            : {},
+          root: {
+            transition: transition(["background-color", "color", "transform"]),
+            "&:hover": {
+              transform: HOVER_LIFT,
+              ...(isDark ? { backgroundColor: "rgba(255, 255, 255, 0.08)" } : {}),
+            },
+            "&:active": {
+              transform: PRESS_SCALE,
+            },
+          },
+        },
+      },
+      MuiMenuItem: {
+        styleOverrides: {
+          root: {
+            transition: transition(["background-color", "color"], "fast"),
+            borderRadius: 8,
+            margin: "2px 6px",
+          },
+        },
+      },
+      MuiAvatar: {
+        styleOverrides: {
+          root: {
+            transition: transition(["box-shadow", "transform"], "fast"),
+          },
         },
       },
     },
