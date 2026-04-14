@@ -1,4 +1,3 @@
-import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 
@@ -16,17 +15,15 @@ if (!rootEl) {
 }
 
 createRoot(rootEl).render(
-  <StrictMode>
-    <BrowserRouter>
-      <ThemeModeProvider>
-        <SnackbarProvider>
-          <AuthProvider>
-            <ModulesProvider>
-              <App />
-            </ModulesProvider>
-          </AuthProvider>
-        </SnackbarProvider>
-      </ThemeModeProvider>
-    </BrowserRouter>
-  </StrictMode>,
+  <BrowserRouter>
+    <ThemeModeProvider>
+      <SnackbarProvider>
+        <AuthProvider>
+          <ModulesProvider>
+            <App />
+          </ModulesProvider>
+        </AuthProvider>
+      </SnackbarProvider>
+    </ThemeModeProvider>
+  </BrowserRouter>,
 );
