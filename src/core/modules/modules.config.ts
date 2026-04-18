@@ -1,5 +1,6 @@
 import { GenericaPage } from "@/modules/genericas/pages/GenericaPage";
-import { PersonasPage } from "@/modules/personas/pages/PersonasPage";
+// Cuando integres por permisos: descomenta import + bloque de abajo, y comenta la ruta estática en `routeDefinitions.tsx`.
+// import { PersonaPage } from "@/modules/persona/pages/PersonaPage";
 
 import type { AppModuleDefinition } from "./types";
 
@@ -37,12 +38,12 @@ function createModulesConfig(modules: AppModuleDefinition[]): readonly AppModule
 }
 
 export const modulesConfig = createModulesConfig([
-  {
-    code: "personas",
-    permissionCodes: ["personas_act"],
-    path: "/personas",
-    element: PersonasPage,
-  },
+  // {
+  //   code: "personas",
+  //   permissionCodes: ["personas_act"],
+  //   path: "/personas",
+  //   element: PersonaPage,
+  // },
   {
     code: "genericas",
     permissionCodes: ["genericas_act"],

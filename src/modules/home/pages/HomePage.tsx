@@ -2,9 +2,7 @@ import { Layout } from "@/shared/layout";
 
 export function HomePage() {
   const handleSearch = (query: string) => {
-    console.log("Buscando:", query);
-    // Aquí puedes implementar la lógica de búsqueda
-    // Por ejemplo: buscar por nombres, cédulas, clientes, etc.
+    void query;
   };
 
   return (
