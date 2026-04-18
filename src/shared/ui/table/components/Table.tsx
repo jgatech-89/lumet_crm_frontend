@@ -19,6 +19,12 @@ export interface TableProps<T> {
   actions?: Action<T>[];
   filters?: FilterConfig[];
   rowsPerPage?: number;
+  /** Paginación controlada (página 1-based). Si no se pasa, la tabla pagina sola. */
+  pagination?: {
+    page: number;
+    onPageChange: (page: number) => void;
+  };
+  actionsColumnLabel?: string;
 }
 
 export const Table = <T extends { id?: string | number },>({
@@ -27,8 +33,12 @@ export const Table = <T extends { id?: string | number },>({
   actions,
   filters,
   rowsPerPage = 5,
+  pagination,
+  actionsColumnLabel,
 }: TableProps<T>) => {
-  const { page, setPage } = useTable();
+  const internal = useTable();
+  const page = pagination?.page ?? internal.page;
+  const setPage = pagination?.onPageChange ?? internal.setPage;
 
   const safeData = data ?? [];
   const startIndex = (page - 1) * rowsPerPage;
@@ -43,7 +53,11 @@ export const Table = <T extends { id?: string | number },>({
 
       <TableContainer>
         <MuiTable>
-          <TableHeader columns={columns} hasActions={!!actions} />
+          <TableHeader
+            columns={columns}
+            hasActions={!!actions}
+            actionsColumnLabel={actionsColumnLabel}
+          />
 
           <TableBody>
             {paginatedData.map((row) => (

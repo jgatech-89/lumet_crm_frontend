@@ -1,5 +1,5 @@
 import { TableRow as MuiRow, TableCell, Box } from "@mui/material";
-import { ActionIconButton } from "@/shared/ui/buttons/actionIconButton";
+import { ActionIconButton } from "@/shared/ui/buttons/components/ActionIconButton";
 import type { ReactNode } from "react";
 import { tableStyles } from "../styles/table.styles";
 
@@ -36,8 +36,8 @@ export const TableRow = <T extends { id?: string | number },>({
       ))}
 
       {actions && actions.length > 0 && (
-        <TableCell>
-          <Box sx={{ display: "flex", gap: 1 }}>
+        <TableCell align="right">
+          <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end" }}>
             {actions.map((action, i) => (
               <ActionIconButton
                 key={`${action.label}-${i}`}

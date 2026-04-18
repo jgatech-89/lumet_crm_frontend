@@ -3,7 +3,7 @@ import { Route, Routes } from "react-router-dom";
 
 import { useAuth } from "@/core/auth/useAuth";
 import { useModulesAccess } from "@/core/modules/ModulesProvider";
-import { FullPageSpinner } from "@/shared/ui/FullPageSpinner";
+import { FullPageSpinner } from "@/shared/ui/loading";
 
 import { GuestRoute } from "./GuestRoute";
 import { ProtectedRoute } from "./ProtectedRoute";

@@ -1,16 +1,13 @@
-import { Button, CircularProgress, type ButtonProps } from "@mui/material";
+import { Button, CircularProgress } from '@mui/material';
+import type { LoadingButtonProps } from '../types/LoadingButton.types';
 
-export interface LoadingButtonProps extends ButtonProps {
-  loading?: boolean;
-  loadingLabel?: string;
-}
 
 export function LoadingButton({
   loading = false,
-  loadingLabel = "Enviando...",
+  loadingLabel = 'Enviando...',
   children,
   disabled,
-  size = "medium",
+  size = 'medium',
   sx,
   ...rest
 }: LoadingButtonProps) {
@@ -26,7 +23,7 @@ export function LoadingButton({
       {loading ? (
         <>
           <CircularProgress
-            size={size === "small" ? 18 : 22}
+            size={size === 'small' ? 18 : 22}
             color="inherit"
             sx={{ mr: 1.5 }}
             aria-hidden

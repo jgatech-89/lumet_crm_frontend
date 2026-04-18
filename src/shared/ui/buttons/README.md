@@ -1,54 +1,97 @@
-# Componentes Generales
+# Componentes de Botones
 
-Esta carpeta contiene componentes reutilizables para toda la aplicación.
+Este módulo incluye tres componentes para botones reutilizables:
 
-## Exportaciones
-
-- `CustomButton`: botón reusable basado en MUI.
-- `ActionIconButton`: botón de icono para acciones compactas (tabla/listado).
-- `BUTTON_PRESETS` / `getButtonPreset`: presets básicos para acciones comunes.
-
-## Uso recomendado
-
-Importa los componentes desde este punto de entrada cuando quieras mantener el código ordenado:
-
-```tsx
-import { CustomButton } from '../../components';
-```
-
-Para acciones de tabla:
-
-```tsx
-import { ActionIconButton } from '../../components';
-```
-
-Para presets:
-
-```tsx
-import { getButtonPreset } from '../../components';
-```
+- `CustomButton`: botón flexible basado en MUI con soporte para `colorHex` e iconos.
+- `ActionIconButton`: botón de icono compacto para acciones en tablas/listados con tooltip.
+- `getButtonPreset()`: función para aplicar estilos estándar a botones comunes.
 
 ## `CustomButton`
 
-Botón reutilizable con soporte para:
+Botón reutilizable con soporte total de MUI + customización de color.
 
-- `label`: texto principal del botón.
-- `variant`: `contained`, `outlined` o `text`.
-- `size`: `small`, `medium` o `large`.
-- `startIcon` o `icon`: icono al inicio.
-- `loading`: estado de carga con spinner.
-- `colorHex`: color personalizado para casos de marca o botones especiales.
+Props principales:
+
+- `label` (required): `ReactNode` - texto o contenido del botón.
+- `variant`: `'contained'` (default) | `'outlined'` | `'text'` - estilo del botón.
+- `size`: `'small'` | `'medium'` (default) | `'large'` - tamaño.
+- `startIcon`: `ReactNode` - icono al inicio del botón (display flex).
+- `icon`: `ReactNode` - alternativo a `startIcon`; se usa si no hay `startIcon`.
+- `loading`: `boolean` (default `false`) - muestra spinner de carga.
+- `loadingIndicator`: `ReactNode` - personaliza el spinner de carga (default: `CircularProgress`).
+- `colorHex`: `string` - color hexadecimal personalizado (ej: `'#1E88E5'`).
+- `disabled`: `boolean` - desactiva el botón.
+- Props de MUI `ButtonProps`: hereda todas las props estándar de Button (ej: `onClick`, `type`, `form`, etc).
+
+Internamente es un `forwardRef`, así que puedes pasar `ref` si necesitas acceder al elemento DOM.
+
+Ejemplo basico:
+
+```tsx
+<CustomButton
+  label="Nueva persona"
+  onClick={handleOpenCreate}
+/>
+```
+
+Ejemplo con icono y color:
+
+```tsx
+<CustomButton
+  label="Guardar Cambios"
+  variant="contained"
+  colorHex="#0063B1"
+  startIcon={<SaveIcon />}
+  type="submit"
+/>
+```
+
+Ejemplo con loading:
+
+```tsx
+<CustomButton
+  label="Cargando..."
+  loading
+  colorHex="#1E88E5"
+  disabled
+/>
+```
+
+Ejemplo outlined:
+
+```tsx
+<CustomButton
+  label="Eliminar"
+  variant="outlined"
+  colorHex="#D32F2F"
+  startIcon={<DeleteIcon />}
+  onClick={() => onDelete(id)}
+/>
+```
 
 ## `ActionIconButton`
 
-Botón reutilizable para acciones con icono y tooltip:
+Botón de icono para acciones rápidas en tablas, listados o controles compactos.
 
-- `label`: texto accesible y tooltip.
-- `icon`: icono visual.
-- `colorHex`: color personalizado del icono.
-- `showTooltip`: permite ocultar el tooltip si no se necesita.
+Renderiza un `IconButton` de MUI dentro de un `Tooltip` (si está habilitado).
 
-### Ejemplos
+Props principales:
+
+- `label` (required): `string` - texto del tooltip y atributo `aria-label`.
+- `icon` (required): `ReactNode` - icono a mostrar.
+- `colorHex` (default `'#546E7A'`): `string` - color hexadecimal del icono.
+- `showTooltip` (default `true`): `boolean` - muestra/oculta el tooltip.
+- `size` (default `'small'`): `'small'` | `'medium'` | `'large'` - tamaño del botón.
+- `sx`: `SxProps<Theme>` - estilos personalizados.
+- Props de MUI `IconButtonProps`: hereda todas las props de IconButton (ej: `onClick`, `disabled`, etc).
+
+Internamente también es un `forwardRef`.
+
+Comportamiento:
+- Color de hover: transparencia del color principal (8% de opacidad).
+- Si `showTooltip` es `false`, no renderiza el wrapper `Tooltip`.
+
+Ejemplo con vista:
 
 ```tsx
 <ActionIconButton
@@ -56,7 +99,11 @@ Botón reutilizable para acciones con icono y tooltip:
   icon={<ViewIcon fontSize="small" />}
   onClick={() => onView(id)}
 />
+```
 
+Ejemplo con delete (rojo):
+
+```tsx
 <ActionIconButton
   label="Eliminar"
   icon={<DeleteIcon fontSize="small" />}
@@ -65,32 +112,44 @@ Botón reutilizable para acciones con icono y tooltip:
 />
 ```
 
-### Ejemplos
+Ejemplo sin tooltip:
 
 ```tsx
-<CustomButton label="Nueva persona" onClick={handleOpenCreate} />
-
-<CustomButton
-  label="Guardar Cambios"
-  variant="contained"
-  colorHex="#0063B1"
-  startIcon={<SaveIcon />}
-  type="submit"
+<ActionIconButton
+  label="Copiar"
+  icon={<FileCopyIcon fontSize="small" />}
+  showTooltip={false}
+  onClick={() => handleCopy()}
 />
+```
 
+## Presets de Botones
+
+`getButtonPreset()` devuelve configuración estándar para acciones comunes.
+
+Presets disponibles:
+
+### `primary`
+- **Uso**: acciones principales, llamadas a la acción (CTAs).
+- **Estilo**: azul contenido, tamaño large, sombra prominente.
+- **Color**: `#1E88E5` azul.
+- **Variante**: `contained`.
+
+```tsx
 <CustomButton
-  label="Eliminar"
-  variant="outlined"
-  color="error"
-  startIcon={<DeleteIcon />}
+  label="Crear nueva persona"
+  onClick={handleCreate}
+  {...getButtonPreset('primary')}
 />
+```
 
-<CustomButton
-  label="Cargando..."
-  loading
-  colorHex="#1E88E5"
-/>
+### `save`
+- **Uso**: guardar cambios en formularios/modales.
+- **Estilo**: azul contenido, borderRadius redondeado (24px), sin sombra por defecto.
+- **Color**: `#1E88E5` azul.
+- **Variante**: `contained`.
 
+```tsx
 <CustomButton
   label="Guardar"
   type="submit"
@@ -98,8 +157,67 @@ Botón reutilizable para acciones con icono y tooltip:
 />
 ```
 
+### `cancel`
+- **Uso**: cancelar, volver atrás, cerrar diálogos.
+- **Estilo**: outlined gris claro, blanco fondo, borde suave.
+- **Variante**: `outlined`.
+
+```tsx
+<CustomButton
+  label="Cancelar"
+  onClick={handleCancel}
+  {...getButtonPreset('cancel')}
+/>
+```
+
+### `delete`
+- **Uso**: acciones destructivas.
+- **Estilo**: outlined rojo.
+- **Color**: `#D32F2F` rojo.
+- **Variante**: `outlined`.
+
+```tsx
+<CustomButton
+  label="Eliminar"
+  onClick={handleDelete}
+  {...getButtonPreset('delete')}
+/>
+```
+
+### `secondary`
+- **Uso**: acciones secundarias, menos prominentes.
+- **Estilo**: text gris oscuro.
+- **Color**: `#546E7A` gris.
+- **Variante**: `text`.
+
+```tsx
+<CustomButton
+  label="Más opciones"
+  {...getButtonPreset('secondary')}
+/>
+```
+
+## Exportaciones
+
+Piezas de botones en `src/shared/ui/buttons/`:
+
+- `CustomButton` → `@/shared/ui/buttons/components/CustomButton`
+- `ActionIconButton` → `@/shared/ui/buttons/components/ActionIconButton`
+- `BUTTON_PRESETS`, `getButtonPreset`, tipos de preset → `@/shared/ui/buttons/buttonPresets`
+
+Indicador de carga en formularios: `LoadingButton` en `@/shared/ui/loading`.
+
+## Importar
+
+```tsx
+import { CustomButton } from '@/shared/ui/buttons/components/CustomButton';
+import { ActionIconButton } from '@/shared/ui/buttons/components/ActionIconButton';
+import { getButtonPreset } from '@/shared/ui/buttons/buttonPresets';
+```
+
 ## Buenas prácticas
 
-- Usa este componente para mantener consistencia visual.
-- Evita duplicar estilos de botón en páginas o modales.
-- Si un botón necesita comportamiento muy específico, crea una variante nueva antes de improvisar en la vista.
+- Usa presets para mantener consistencia visual.
+- Prefiere `getButtonPreset()` sobre estilos inline para acciones comunes.
+- Para `ActionIconButton` en tablas, siempre proporciona un `label` accesible.
+- Si la aplicación necesita un botón con comportamiento/estilo muy específico, considera si es mejor crear un preset nuevo en lugar de sobreestilizar con `sx`.

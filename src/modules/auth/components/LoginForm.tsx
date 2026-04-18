@@ -12,7 +12,7 @@ import { alpha } from "@mui/material/styles";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
-import { LoadingButton } from "@/shared/ui/LoadingButton";
+import { LoadingButton } from "@/shared/ui/loading";
 
 import { darkUi } from "@/core/theme/darkUi";
 
