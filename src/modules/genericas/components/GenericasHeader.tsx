@@ -1,6 +1,6 @@
 import { Box, Typography } from "@mui/material";
 import { Add } from "@mui/icons-material";
-import { CustomButton } from "@/shared/ui/buttons/buttons";
+import { CustomButton } from "@/shared/ui/buttons/components/CustomButton";
 
 interface GenericasHeaderProps {
   onNuevaGenerica: () => void;
