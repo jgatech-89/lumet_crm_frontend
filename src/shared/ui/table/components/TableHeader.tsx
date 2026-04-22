@@ -18,7 +18,7 @@ export const TableHeader = <T,>({
       <TableRow>
         {columns.map((col) => (
           <TableCell key={String(col.key)} sx={tableStyles.headerCell}>
-            {col.label}
+            {String(col.label).toUpperCase()}
           </TableCell>
         ))}
 
