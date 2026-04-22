@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
 
 import { useAuth } from "@/core/auth/useAuth";
-import { FullPageSpinner } from "@/shared/ui/FullPageSpinner";
+import { FullPageSpinner } from "@/shared/ui/loading";
 
 interface GuestRouteProps {
   children: ReactNode;

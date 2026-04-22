@@ -5,9 +5,14 @@ import type { Column } from "./TableRow";
 interface Props<T> {
   columns: Column<T>[];
   hasActions?: boolean;
+  actionsColumnLabel?: string;
 }
 
-export const TableHeader = <T,>({ columns, hasActions }: Props<T>) => {
+export const TableHeader = <T,>({
+  columns,
+  hasActions,
+  actionsColumnLabel = "Opciones",
+}: Props<T>) => {
   return (
     <TableHead>
       <TableRow>
@@ -18,7 +23,9 @@ export const TableHeader = <T,>({ columns, hasActions }: Props<T>) => {
         ))}
 
         {hasActions && (
-          <TableCell sx={tableStyles.headerCell}>Opciones</TableCell>
+          <TableCell sx={{ ...tableStyles.headerCell, textAlign: "right" }}>
+            {actionsColumnLabel}
+          </TableCell>
         )}
       </TableRow>
     </TableHead>

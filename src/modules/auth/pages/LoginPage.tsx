@@ -13,7 +13,7 @@ import {
 import { useState, type ReactNode } from "react";
 
 import { AuthLayout } from "@/modules/auth/components/AuthLayout";
-import { LoadingButton } from "@/shared/ui/LoadingButton";
+import { LoadingButton } from "@/shared/ui/loading";
 
 import { ConfirmCodeForm } from "../components/ConfirmCodeForm";
 import { LoginForm } from "../components/LoginForm";
