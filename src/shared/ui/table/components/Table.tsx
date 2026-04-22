@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   Table as MuiTable,
   TableBody,
@@ -9,43 +10,96 @@ import { TableHeader } from "./TableHeader";
 import { TableRow } from "./TableRow";
 import { TablePagination } from "./TablePagination";
 import { TableFilters } from "./TableFilters";
-import { useTable } from "../hooks/useTable";
 import type { Column, Action } from "./TableRow";
 import type { FilterConfig } from "./TableFilters";
+import type { ApiPagination } from "@/core/api/types";
+
+const EMPTY_DATA: unknown[] = [];
+
+export type ColumnsConfig<T> = {
+  key: keyof T;
+  label?: string;
+};
+
+/** Misma forma que devuelve el backend (`ApiPagination`). */
+export type TableServerPagination = ApiPagination;
+
+function formatKeyToLabel(key: string): string {
+  const withSpaces = key
+    .replace(/_/g, " ")
+    .replace(/([a-z])([A-Z])/g, "$1 $2");
+
+  return withSpaces
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+}
+
+function autoGenerateColumns<T>(data: T[]): Column<T>[] {
+  const first = data[0];
+  if (first == null || typeof first !== "object") {
+    return [];
+  }
+
+  return (Object.keys(first) as (keyof T)[]).map((key) => ({
+    key,
+    label: formatKeyToLabel(String(key)),
+  }));
+}
+
+function columnsFromConfig<T>(config: ColumnsConfig<T>[]): Column<T>[] {
+  return config.map((c) => ({
+    key: c.key,
+    label: c.label ?? formatKeyToLabel(String(c.key)),
+  }));
+}
+
+function resolveColumns<T>(
+  columns: Column<T>[] | undefined,
+  columnsConfig: ColumnsConfig<T>[] | undefined,
+  data: T[]
+): Column<T>[] {
+  if (columns !== undefined) {
+    return columns;
+  }
+  if (columnsConfig !== undefined) {
+    return columnsFromConfig(columnsConfig);
+  }
+  return autoGenerateColumns(data);
+}
 
 export interface TableProps<T> {
   data: T[];
-  columns: Column<T>[];
+  /** Modo avanzado: control total (render, orden, etc.). */
+  columns?: Column<T>[];
+  /** Modo simple: key + label opcional; sin render personalizado. */
+  columnsConfig?: ColumnsConfig<T>[];
   actions?: Action<T>[];
   filters?: FilterConfig[];
-  rowsPerPage?: number;
-  /** Paginación controlada (página 1-based). Si no se pasa, la tabla pagina sola. */
-  pagination?: {
-    page: number;
-    onPageChange: (page: number) => void;
-  };
+  /** Metadatos de paginación tal cual devuelve el backend. */
+  pagination?: ApiPagination | null;
+  /** Cambio de página (1-based). La tabla no hace fetch; solo notifica. */
+  onPageChange?: (page: number) => void;
   actionsColumnLabel?: string;
 }
 
 export const Table = <T extends { id?: string | number },>({
   data,
   columns,
+  columnsConfig,
   actions,
   filters,
-  rowsPerPage = 5,
   pagination,
+  onPageChange,
   actionsColumnLabel,
 }: TableProps<T>) => {
-  const internal = useTable();
-  const page = pagination?.page ?? internal.page;
-  const setPage = pagination?.onPageChange ?? internal.setPage;
+  const safeData = (data ?? EMPTY_DATA) as T[];
 
-  const safeData = data ?? [];
-  const startIndex = (page - 1) * rowsPerPage;
-  const paginatedData = safeData.slice(startIndex, startIndex + rowsPerPage);
-  const total = safeData.length;
-  const start = total === 0 ? 0 : startIndex + 1;
-  const end = Math.min(startIndex + rowsPerPage, total);
+  const resolvedColumns = useMemo(
+    () => resolveColumns(columns, columnsConfig, safeData),
+    [columns, columnsConfig, safeData]
+  );
 
   return (
     <Box sx={tableStyles.container}>
@@ -54,17 +108,17 @@ export const Table = <T extends { id?: string | number },>({
       <TableContainer>
         <MuiTable>
           <TableHeader
-            columns={columns}
+            columns={resolvedColumns}
             hasActions={!!actions}
             actionsColumnLabel={actionsColumnLabel}
           />
 
           <TableBody>
-            {paginatedData.map((row) => (
+            {safeData.map((row) => (
               <TableRow
                 key={String(row.id ?? JSON.stringify(row))}
                 row={row}
-                columns={columns}
+                columns={resolvedColumns}
                 actions={actions}
               />
             ))}
@@ -72,18 +126,19 @@ export const Table = <T extends { id?: string | number },>({
         </MuiTable>
       </TableContainer>
 
-      <Box sx={tableStyles.footer}>
-        <span>
-          Mostrando {start}–{end} de {total}
-        </span>
-
-        <TablePagination
-          page={page}
-          total={total}
-          rowsPerPage={rowsPerPage}
-          onPageChange={setPage}
-        />
-      </Box>
+      {pagination != null && (
+        <Box
+          sx={{
+            ...tableStyles.footer,
+            justifyContent: "flex-end",
+          }}
+        >
+          <TablePagination
+            pagination={pagination}
+            onPageChange={onPageChange}
+          />
+        </Box>
+      )}
     </Box>
   );
 };

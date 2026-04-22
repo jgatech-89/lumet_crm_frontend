@@ -5,9 +5,19 @@ export type ApiError = {
   message: string;
 };
 
+export type ApiPagination = {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  next: string | null;
+  previous: string | null;
+};
+
 export type ApiResponse<T> = {
   success: boolean;
   message: string;
   data: T | null;
+  pagination?: ApiPagination;
   errors: ApiError[] | null;
 };
