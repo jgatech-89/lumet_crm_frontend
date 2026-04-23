@@ -7,6 +7,8 @@ import {
   Typography,
   useMediaQuery,
   useTheme,
+  type SxProps,
+  type Theme,
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 import { isValidElement } from 'react';
@@ -40,6 +42,14 @@ const renderSubtitleNode = (value: CustomModalProps['subtitle']) => {
       {value}
     </Typography>
   );
+};
+
+const defaultDialogActionsSx: SxProps<Theme> = {
+  px: 2,
+  pb: 2,
+  pt: 0,
+  gap: 1.5,
+  justifyContent: 'flex-end',
 };
 
 export const CustomModal = ({
@@ -288,7 +298,12 @@ export const CustomModal = ({
       </DialogContent>
 
       {actions && (
-        <DialogActions sx={[{ gap: 1 }, ...(actionsSx ? (Array.isArray(actionsSx) ? actionsSx : [actionsSx]) : [])]}>
+        <DialogActions
+          sx={[
+            defaultDialogActionsSx,
+            ...(actionsSx ? (Array.isArray(actionsSx) ? actionsSx : [actionsSx]) : []),
+          ]}
+        >
           {actions}
         </DialogActions>
       )}

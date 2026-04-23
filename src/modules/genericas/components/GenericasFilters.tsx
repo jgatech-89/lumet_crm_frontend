@@ -40,6 +40,8 @@ export function GenericasFilters({ sortOrder, onSortOrderChange }: GenericasFilt
           >
             <MenuItem value="asc">Ascendente</MenuItem>
             <MenuItem value="desc">Descendente</MenuItem>
+            <MenuItem value="nombre">Nombre (A-Z)</MenuItem>
+            <MenuItem value="nombre-desc">Nombre (Z-A)</MenuItem>
           </Select>
         </FormControl>
       </FilterItem>

@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import type { ReactNode } from "react";
 import {
   Table as MuiTable,
   TableBody,
@@ -19,9 +20,10 @@ const EMPTY_DATA: unknown[] = [];
 export type ColumnsConfig<T> = {
   key: keyof T;
   label?: string;
+  render?: (value: T[keyof T] | undefined, row: T) => ReactNode;
+  emptyValue?: ReactNode;
 };
 
-/** Misma forma que devuelve el backend (`ApiPagination`). */
 export type TableServerPagination = ApiPagination;
 
 function formatKeyToLabel(key: string): string {
@@ -49,10 +51,28 @@ function autoGenerateColumns<T>(data: T[]): Column<T>[] {
 }
 
 function columnsFromConfig<T>(config: ColumnsConfig<T>[]): Column<T>[] {
-  return config.map((c) => ({
-    key: c.key,
-    label: c.label ?? formatKeyToLabel(String(c.key)),
-  }));
+  return config.map((c) => {
+    const label = c.label ?? formatKeyToLabel(String(c.key));
+    if (c.render) {
+      const customRender = c.render;
+      return {
+        key: c.key,
+        label,
+        renderValue: (value: T[keyof T] | undefined, row: T) =>
+          customRender(value, row),
+      } satisfies Column<T>;
+    }
+    if (c.emptyValue !== undefined) {
+      const placeholder = c.emptyValue;
+      return {
+        key: c.key,
+        label,
+        renderValue: (value: T[keyof T] | undefined) =>
+          value == null ? placeholder : (value as ReactNode),
+      } satisfies Column<T>;
+    }
+    return { key: c.key, label };
+  });
 }
 
 function resolveColumns<T>(
@@ -71,15 +91,12 @@ function resolveColumns<T>(
 
 export interface TableProps<T> {
   data: T[];
-  /** Modo avanzado: control total (render, orden, etc.). */
   columns?: Column<T>[];
-  /** Modo simple: key + label opcional; sin render personalizado. */
+
   columnsConfig?: ColumnsConfig<T>[];
   actions?: Action<T>[];
   filters?: FilterConfig[];
-  /** Metadatos de paginación tal cual devuelve el backend. */
   pagination?: ApiPagination | null;
-  /** Cambio de página (1-based). La tabla no hace fetch; solo notifica. */
   onPageChange?: (page: number) => void;
   actionsColumnLabel?: string;
 }
