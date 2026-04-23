@@ -1,5 +1,5 @@
-import { LinearLoader } from './LinearLoader';
+import { AppSkeleton } from "./AppSkeleton";
 
 export function FullPageSpinner() {
-  return <LinearLoader fullPage label="Cargando aplicación..." />;
+  return <AppSkeleton variant="dashboard" fullPage tableRows={5} />;
 }

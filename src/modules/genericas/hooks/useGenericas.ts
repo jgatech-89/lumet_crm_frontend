@@ -7,6 +7,7 @@ import type { ApiPagination } from "@/core/api/types";
 
 export function useGenericas() {
   const [genericas, setGenericas] = useState<Generica[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
@@ -52,6 +53,16 @@ export function useGenericas() {
         : b.id - a.id;
     });
   }, [genericas, sortOrder]);
+
+  const filteredGenericas = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+    if (!normalizedQuery) {
+      return sortedGenericas;
+    }
+    return sortedGenericas.filter((item) =>
+      item.nombre?.toLowerCase().includes(normalizedQuery)
+    );
+  }, [sortedGenericas, searchQuery]);
   
   const handleModalCreate = () => {
     setMode("create");
@@ -68,7 +79,9 @@ export function useGenericas() {
   return {
     openModalGenericaList,
     setOpenModalGenericaList,
-    genericas: sortedGenericas,
+    genericas: filteredGenericas,
+    searchQuery,
+    setSearchQuery,
     loading,
     error,
     sortOrder,

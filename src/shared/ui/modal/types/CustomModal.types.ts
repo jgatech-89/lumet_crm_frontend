@@ -23,4 +23,5 @@ export interface CustomModalProps
   contentLoadingVariant?: 'skeleton' | 'linear';
   contentLoadingLabel?: string;
   contentSkeletonRows?: number;
+  visualVariant?: 'default' | 'modern';
 }

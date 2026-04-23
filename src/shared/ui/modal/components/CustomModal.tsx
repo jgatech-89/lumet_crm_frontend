@@ -26,7 +26,11 @@ const renderTitleNode = (value: CustomModalProps['title']) => {
   }
 
   return (
-    <Typography variant="h5" fontWeight={700}>
+    <Typography
+      variant="h5"
+      fontWeight={600}
+      sx={{ fontSize: { xs: '1.14rem', sm: '1.3rem' }, lineHeight: 1.22, letterSpacing: '-0.01em' }}
+    >
       {value}
     </Typography>
   );
@@ -38,16 +42,16 @@ const renderSubtitleNode = (value: CustomModalProps['subtitle']) => {
   }
 
   return (
-    <Typography variant="body2" color="text.secondary">
+    <Typography variant="body2" color="text.secondary" sx={{ mt: 0.45, fontSize: '0.88rem' }}>
       {value}
     </Typography>
   );
 };
 
 const defaultDialogActionsSx: SxProps<Theme> = {
-  px: 2,
-  pb: 2,
-  pt: 0,
+  px: 3,
+  pb: 2.5,
+  pt: 1.5,
   gap: 1.5,
   justifyContent: 'flex-end',
 };
@@ -70,6 +74,7 @@ export const CustomModal = ({
   contentLoadingVariant = 'skeleton',
   contentLoadingLabel = 'Cargando contenido...',
   contentSkeletonRows = 5,
+  visualVariant = 'modern',
   showCloseButton = true,
   disableBackdropClose = false,
   contentSx,
@@ -90,6 +95,13 @@ export const CustomModal = ({
 
   const paperSlotProps = dialogProps.slotProps?.paper;
   const buildPaperSx = (paperSx: unknown) => {
+    const visualVariantSx =
+      visualVariant === 'modern'
+        ? {
+            borderRadius: '20px',
+          }
+        : {};
+
     const mobilePaperSx = useMobileSheet
       ? {
           '@media (max-width:600px)': {
@@ -110,7 +122,18 @@ export const CustomModal = ({
     return [
       {
         borderBottom: `4px solid ${bottomBorderColor}`,
+        '&::after': {
+          content: '""',
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: '4px',
+          backgroundColor: bottomBorderColor,
+          pointerEvents: 'none',
+        },
       },
+      visualVariantSx,
       ...(mobilePaperSx ? [mobilePaperSx] : []),
       ...(Array.isArray(paperSx)
         ? paperSx
@@ -156,7 +179,7 @@ export const CustomModal = ({
           overflow: 'hidden',
           '& .MuiBackdrop-root': {
             backdropFilter: 'blur(8px)',
-            backgroundColor: 'rgba(15, 23, 42, 0.28)',
+            backgroundColor: 'rgba(15, 23, 42, 0.56)',
           },
           '& .MuiDialog-container': {
             alignItems: 'flex-end',
@@ -204,6 +227,11 @@ export const CustomModal = ({
     : undefined;
 
   const mergedDialogSx = [
+    {
+      '& .MuiBackdrop-root': {
+        backgroundColor: 'rgba(15, 23, 42, 0.56)',
+      },
+    },
     ...(mobileSheetSx ? [mobileSheetSx] : []),
     ...(Array.isArray(dialogProps.sx)
       ? dialogProps.sx
@@ -252,10 +280,13 @@ export const CustomModal = ({
           sx={{
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'center',
-            p: 2,
+            alignItems: 'flex-start',
+            p: 2.5,
             pb: { xs: useMobileSheet ? 0.5 : 0, sm: 0 },
-            pt: { xs: useMobileSheet ? 2.25 : 2, sm: 2 },
+            pt: { xs: useMobileSheet ? 2.35 : 2.5, sm: 2.5 },
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+            gap: 1.5,
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -274,14 +305,39 @@ export const CustomModal = ({
           </Box>
 
           {showCloseButton && (
-            <IconButton onClick={onClose} size="small">
+            <IconButton
+              onClick={onClose}
+              size="small"
+              sx={{
+                width: 34,
+                height: 34,
+                borderRadius: '50%',
+                border: '1px solid',
+                borderColor: 'divider',
+                color: 'text.secondary',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  bgcolor: 'action.hover',
+                  color: 'text.primary',
+                },
+              }}
+            >
               <CloseIcon fontSize="small" />
             </IconButton>
           )}
         </DialogTitle>
       )}
 
-      <DialogContent sx={contentSx}>
+      <DialogContent
+        sx={[
+          {
+            '& > * + *': {
+              mt: 1.25,
+            },
+          },
+          ...(contentSx ? (Array.isArray(contentSx) ? contentSx : [contentSx]) : []),
+        ]}
+      >
         {actionLoading && actionLoadingMode === 'top' ? (
           <LinearLoader label={actionLoadingLabel} sx={{ mb: 1.5 }} />
         ) : null}

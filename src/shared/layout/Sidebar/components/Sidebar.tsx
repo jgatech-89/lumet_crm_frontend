@@ -11,11 +11,15 @@ const loadingPlaceholderSx = {
   py: 4,
 } as const;
 
-export const Sidebar = () => {
+interface SidebarProps {
+  compact?: boolean;
+}
+
+export const Sidebar = ({ compact = false }: SidebarProps) => {
   const { items, loading } = useSidebar();
 
   return (
-    <Box sx={sidebarStyles.container}>
+    <Box sx={(theme) => sidebarStyles.container(theme, compact)}>
       {loading ? (
         <Box sx={loadingPlaceholderSx}>
           <CircularProgress />
@@ -44,7 +48,7 @@ export const Sidebar = () => {
                   animationDelay: `${index * 40}ms`,
                 }}
               >
-                <SidebarItem item={item} />
+                <SidebarItem item={item} compact={compact} />
               </Box>
             ))}
           </List>

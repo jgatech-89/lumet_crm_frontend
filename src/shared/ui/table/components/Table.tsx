@@ -99,6 +99,7 @@ export interface TableProps<T> {
   pagination?: ApiPagination | null;
   onPageChange?: (page: number) => void;
   actionsColumnLabel?: string;
+  footerSummaryText?: string;
 }
 
 export const Table = <T extends { id?: string | number },>({
@@ -110,6 +111,7 @@ export const Table = <T extends { id?: string | number },>({
   pagination,
   onPageChange,
   actionsColumnLabel,
+  footerSummaryText,
 }: TableProps<T>) => {
   const safeData = (data ?? EMPTY_DATA) as T[];
 
@@ -117,6 +119,17 @@ export const Table = <T extends { id?: string | number },>({
     () => resolveColumns(columns, columnsConfig, safeData),
     [columns, columnsConfig, safeData]
   );
+
+  const showingText = useMemo(() => {
+    if (footerSummaryText) {
+      return footerSummaryText;
+    }
+    if (pagination == null) {
+      return `Mostrando ${safeData.length}`;
+    }
+    const total = Number(pagination.total ?? 0);
+    return `Mostrando ${safeData.length} de ${total}`;
+  }, [footerSummaryText, pagination, safeData.length]);
 
   return (
     <Box sx={tableStyles.container}>
@@ -144,12 +157,8 @@ export const Table = <T extends { id?: string | number },>({
       </TableContainer>
 
       {pagination != null && (
-        <Box
-          sx={{
-            ...tableStyles.footer,
-            justifyContent: "flex-end",
-          }}
-        >
+        <Box sx={tableStyles.footer}>
+          <Box sx={tableStyles.footerSummary}>{showingText}</Box>
           <TablePagination
             pagination={pagination}
             onPageChange={onPageChange}

@@ -32,12 +32,12 @@ export function GenericaModalForm({
       noValidate
     >
       <Stack
-        spacing={{ xs: 2, sm: 4 }}
+        spacing={{ xs: 2, sm: 2.75 }}
         sx={{
-          pt: { xs: 1.5, sm: 4.5 },
+          pt: { xs: 1.8, sm: 2.6 },
           px: { xs: 0.5, sm: 1 },
         }}
-        mb={2}
+        mb={1}
       >
         <TextField
           label="Nombre"
@@ -49,6 +49,17 @@ export function GenericaModalForm({
           helperText={nombreError}
           autoFocus
           disabled={saving}
+          InputLabelProps={{
+            sx: {
+              fontWeight: 600,
+              color: "text.primary",
+            },
+          }}
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              backgroundColor: "background.paper",
+            },
+          }}
         />
         <TextField
           label="Descripción"
@@ -59,6 +70,17 @@ export function GenericaModalForm({
           onChange={(e) => onDescripcionChange(e.target.value)}
           disabled={saving}
           placeholder="Opcional"
+          InputLabelProps={{
+            sx: {
+              fontWeight: 600,
+              color: "text.primary",
+            },
+          }}
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              backgroundColor: "background.paper",
+            },
+          }}
         />
       </Stack>
     </Box>

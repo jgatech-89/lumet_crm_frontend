@@ -36,13 +36,33 @@ export function GenericaModal({ open, onClose, onCreated, mode, initialData }: G
       actionLoadingLabel={mode === "create" ? "Guardando..." : "Actualizando..."}
       actions={
         <>
-          <CustomButton label="Cancelar" variant="outlined" onClick={handleClose} disabled={saving} />
+          <CustomButton
+            label="Cancelar"
+            variant="outlined"
+            onClick={handleClose}
+            disabled={saving}
+            sx={{
+              borderColor: "divider",
+              color: "text.secondary",
+              fontWeight: 500,
+              "&:hover": {
+                borderColor: "primary.light",
+                backgroundColor: "action.hover",
+                color: "text.primary",
+              },
+            }}
+          />
           <CustomButton
             label={mode === "create" ? "Guardar" : "Actualizar"}
             variant="contained"
             type="submit"
             form={NUEVA_GENERICA_MODAL_FORM_ID}
             loading={saving}
+            colorHex="#2563eb"
+            sx={{
+              fontWeight: 600,
+              boxShadow: "0 8px 18px rgba(37,99,235,0.24)",
+            }}
           />
         </>
       }

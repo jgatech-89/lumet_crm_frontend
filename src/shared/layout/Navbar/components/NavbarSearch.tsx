@@ -31,13 +31,20 @@ export const NavbarSearch = ({ placeholder = "Buscar...", onSearch }: NavbarSear
     }
   };
 
+  const handleChange = (value: string) => {
+    setSearchValue(value);
+    if (onSearch) {
+      onSearch(value);
+    }
+  };
+
   return (
     <TextField
       size="small"
       placeholder={placeholder}
       variant="outlined"
       value={searchValue}
-      onChange={(e) => setSearchValue(e.target.value)}
+      onChange={(e) => handleChange(e.target.value)}
       onKeyDown={handleKeyDown}
       sx={{
         width: { xs: 200, sm: 280, md: 350 },

@@ -1,4 +1,4 @@
-import { Edit, Visibility } from "@mui/icons-material";
+import { EditOutlined, VisibilityOutlined } from "@mui/icons-material";
 import type { Action } from "@/shared/ui/table/components/TableRow";
 import type { Generica } from "../types/genericas.types";
 
@@ -13,12 +13,14 @@ export const getGenericaActions = ({
 }: Props): Action<Generica>[] => [
     {
       label: "Ver",
-      icon: <Visibility color="success" sx={{ "&:hover": { color: "#008000" } }} />,
+      icon: <VisibilityOutlined fontSize="small" />,
+      colorHex: "#16a34a",
       onClick: onView,
     },
     {
-      label: "Editar",
-      icon: <Edit color="primary" sx={{ "&:hover": { color: "#1976d2" } }} />,
+      label: "Modificar valores",
+      icon: <EditOutlined fontSize="small" />,
+      colorHex: "#64748b",
       onClick: onEdit,
     },
     // {

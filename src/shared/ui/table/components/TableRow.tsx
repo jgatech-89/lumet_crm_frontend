@@ -47,8 +47,8 @@ export const TableRow = <T extends { id?: string | number },>({
       ))}
 
       {actions && actions.length > 0 && (
-        <TableCell align="right">
-          <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end" }}>
+        <TableCell sx={{ ...tableStyles.cell, width: "132px", px: 1 }} align="center">
+          <Box sx={{ display: "flex", gap: 0.25, justifyContent: "center", alignItems: "center" }}>
             {actions.map((action, i) => (
               <ActionIconButton
                 key={`${action.label}-${i}`}

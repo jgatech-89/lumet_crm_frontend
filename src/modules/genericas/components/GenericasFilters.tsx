@@ -1,12 +1,9 @@
 import {
   Box,
-  FormControl,
-  Select,
-  MenuItem,
+  ButtonBase,
   Typography,
-  type SelectChangeEvent,
 } from "@mui/material";
-import { KeyboardArrowDown } from "@mui/icons-material";
+import { alpha } from "@mui/material/styles";
 
 export type SortOrder = "asc" | "desc";
 
@@ -16,34 +13,28 @@ interface GenericasFiltersProps {
 }
 
 export function GenericasFilters({ sortOrder, onSortOrderChange }: GenericasFiltersProps) {
-  const handleChange = (e: SelectChangeEvent) => {
-    onSortOrderChange(e.target.value as SortOrder);
-  };
-
   return (
     <Box
       sx={{
         display: "flex",
         alignItems: "center",
         flexWrap: "wrap",
-        gap: 2,
-        mb: 2,
+        gap: 0.9,
       }}
     >
-      <FilterItem label="ORDENAR">
-        <FormControl size="small">
-          <Select
-            value={sortOrder}
-            onChange={handleChange}
-            IconComponent={KeyboardArrowDown}
-            sx={selectSx}
-          >
-            <MenuItem value="asc">Ascendente</MenuItem>
-            <MenuItem value="desc">Descendente</MenuItem>
-            <MenuItem value="nombre">Nombre (A-Z)</MenuItem>
-            <MenuItem value="nombre-desc">Nombre (Z-A)</MenuItem>
-          </Select>
-        </FormControl>
+      <FilterItem label="Ordenar por:">
+        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.6 }}>
+          <FilterPill
+            label="Ascendente"
+            selected={sortOrder === "asc"}
+            onClick={() => onSortOrderChange("asc")}
+          />
+          <FilterPill
+            label="Descendente"
+            selected={sortOrder === "desc"}
+            onClick={() => onSortOrderChange("desc")}
+          />
+        </Box>
       </FilterItem>
     </Box>
   );
@@ -51,44 +42,57 @@ export function GenericasFilters({ sortOrder, onSortOrderChange }: GenericasFilt
 
 function FilterItem({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+    <Box sx={{ display: "flex", alignItems: "center", gap: 0.7 }}>
       <Typography
-        variant="body2"
-        fontWeight={700}
+        variant="caption"
+        fontWeight={600}
         sx={{
-          textTransform: "uppercase",
-          letterSpacing: "0.06em",
+          letterSpacing: "0.01em",
           color: "text.secondary",
+          fontSize: "0.76rem",
+          opacity: 0.95,
           whiteSpace: "nowrap",
         }}
       >
-        {label}:
+        {label}
       </Typography>
       {children}
     </Box>
   );
 }
 
-const selectSx = {
-  minWidth: 170,
-  borderRadius: "10px",
-  backgroundColor: "background.paper",
-  fontWeight: 500,
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: "divider",
-  },
-  "&:hover .MuiOutlinedInput-notchedOutline": {
-    borderColor: "text.disabled",
-  },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-    borderWidth: "1px",
-    borderColor: "primary.main",
-  },
-  "& .MuiSelect-icon": {
-    color: "text.secondary",
-    transition: "transform 0.2s ease",
-  },
-  "& .MuiSelect-iconOpen": {
-    transform: "rotate(180deg)",
-  },
-};
+function FilterPill({
+  label,
+  selected,
+  onClick,
+}: {
+  label: string;
+  selected?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <ButtonBase
+      onClick={onClick}
+      sx={{
+        px: 1.2,
+        py: 0.55,
+        borderRadius: "999px",
+        border: "1px solid",
+        borderColor: selected ? "primary.main" : "divider",
+        backgroundColor: selected ? alpha("#2563eb", 0.1) : "transparent",
+        color: selected ? "primary.main" : "text.secondary",
+        fontSize: "0.74rem",
+        fontWeight: 500,
+        lineHeight: 1,
+        transition: "all 0.2s ease",
+        "&:hover": {
+          borderColor: "primary.main",
+          backgroundColor: alpha("#2563eb", 0.08),
+          color: "primary.main",
+        },
+      }}
+    >
+      {label}
+    </ButtonBase>
+  );
+}

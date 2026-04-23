@@ -18,8 +18,10 @@ import LightModeIcon from "@mui/icons-material/LightMode";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import ManageAccountsOutlinedIcon from "@mui/icons-material/ManageAccountsOutlined";
 import LogoutIcon from "@mui/icons-material/Logout";
-import CheckIcon from "@mui/icons-material/Check";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import type { AuthUserPerfil } from "@/modules/auth/types/auth.types";
 import { useAuth } from "@/core/auth/useAuth";
 import { useThemeMode } from "@/core/theme";
@@ -148,8 +150,8 @@ export const NavbarActions = () => {
             elevation: 4,
             sx: {
               mt: 1,
-              minWidth: 248,
-              borderRadius: 2,
+              minWidth: 360,
+              borderRadius: 4,
               overflow: "hidden",
               transformOrigin: "top right",
               animation: "userMenuEnter 0.18s cubic-bezier(0.16, 1, 0.3, 1)",
@@ -168,9 +170,9 @@ export const NavbarActions = () => {
                   ? "0 8px 24px rgba(0,0,0,0.5)"
                   : "0 8px 24px rgba(0,0,0,0.12)",
               "& .MuiMenuItem-root": {
-                borderRadius: 1,
-                mx: 0.75,
-                px: 1.25,
+                borderRadius: 1.5,
+                mx: 1,
+                px: 1.5,
                 "&:hover": {
                   bgcolor: (t) => alpha(t.palette.primary.main, 0.08),
                 },
@@ -182,12 +184,12 @@ export const NavbarActions = () => {
         {/* ── Header: información del usuario (no clickeable) ── */}
         <Box
           sx={{
-            px: 2,
-            pt: 2,
-            pb: 1.5,
+            px: 2.25,
+            pt: 2.25,
+            pb: 2,
             display: "flex",
             alignItems: "center",
-            gap: 1.5,
+            gap: 1.75,
             pointerEvents: "none",
           }}
         >
@@ -197,6 +199,7 @@ export const NavbarActions = () => {
               width: 44,
               height: 44,
               fontSize: "1.05rem",
+              boxShadow: (t) => `0 10px 20px ${alpha(t.palette.primary.main, 0.25)}`,
             }}
           >
             {initials}
@@ -224,14 +227,26 @@ export const NavbarActions = () => {
                 sx={{
                   display: "flex",
                   alignItems: "center",
-                  gap: 0.5,
-                  mt: 0.4,
+                  gap: 0.7,
+                  mt: 0.55,
+                  px: 1.1,
+                  py: 0.45,
+                  borderRadius: 999,
+                  bgcolor: (t) =>
+                    t.palette.mode === "dark"
+                      ? alpha(t.palette.success.main, 0.16)
+                      : alpha(t.palette.success.main, 0.1),
+                  border: "1px solid",
+                  borderColor: (t) =>
+                    t.palette.mode === "dark"
+                      ? alpha(t.palette.success.main, 0.42)
+                      : alpha(t.palette.success.main, 0.24),
                 }}
               >
                 <Box
                   sx={{
-                    width: 6,
-                    height: 6,
+                    width: 9,
+                    height: 9,
                     borderRadius: "50%",
                     bgcolor: "success.main",
                     flexShrink: 0,
@@ -240,7 +255,7 @@ export const NavbarActions = () => {
                 <Typography
                   variant="caption"
                   noWrap
-                  sx={{ color: "text.disabled", fontSize: "0.7rem" }}
+                  sx={{ color: "success.main", fontSize: "0.72rem", fontWeight: 600 }}
                 >
                   {activeProfile.nombre}
                 </Typography>
@@ -252,22 +267,36 @@ export const NavbarActions = () => {
         <Divider sx={{ mb: 0.75 }} />
 
         {/* ── Acciones ── */}
-        <MenuItem onClick={handleMenuClose} sx={{ py: 1 }}>
+        <MenuItem onClick={handleMenuClose} sx={{ py: 1.2 }}>
           <ListItemIcon>
             <PersonOutlineIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText>Perfil</ListItemText>
+          <ListItemText
+            primary="Perfil"
+            secondary="Ver y editar tu información"
+            slotProps={{
+              primary: { fontWeight: 600 },
+              secondary: { fontSize: "0.8rem", color: "text.secondary" },
+            }}
+          />
+          <ChevronRightIcon sx={{ color: "text.disabled" }} />
         </MenuItem>
 
         {/* ── Cambiar perfil: toggle de la lista inline ── */}
         <MenuItem
           onClick={() => setProfilesOpen((prev) => !prev)}
-          sx={{ py: 1 }}
+          sx={{ py: 1.2 }}
         >
           <ListItemIcon>
-            <ManageAccountsOutlinedIcon fontSize="small" />
+            <ManageAccountsOutlinedIcon
+              fontSize="small"
+              sx={{ color: profilesOpen ? "primary.main" : "text.secondary" }}
+            />
           </ListItemIcon>
-          <ListItemText>Cambiar perfil</ListItemText>
+          <ListItemText
+            primary="Cambiar perfil"
+            slotProps={{ primary: { fontWeight: 600 } }}
+          />
           <ExpandMoreIcon
             fontSize="small"
             sx={{
@@ -283,13 +312,10 @@ export const NavbarActions = () => {
         <Collapse in={profilesOpen} timeout={160} unmountOnExit>
           <Box
             sx={{
-              mx: 0.75,
-              mb: 0.5,
-              borderRadius: 1.5,
-              bgcolor: (t) =>
-                t.palette.mode === "dark"
-                  ? alpha(t.palette.common.white, 0.04)
-                  : alpha(t.palette.common.black, 0.03),
+              mx: 1,
+              mb: 0.75,
+              borderRadius: 2,
+              bgcolor: "transparent",
               overflow: "hidden",
             }}
           >
@@ -300,11 +326,12 @@ export const NavbarActions = () => {
                   key={perfil.id}
                   onClick={() => handleSelectPerfil(perfil)}
                   sx={{
-                    py: 0.85,
-                    pl: 1.5,
-                    mx: "0 !important",
-                    borderRadius: "0 !important",
-                    bgcolor: "transparent !important",
+                    py: 1.05,
+                    pl: 1.2,
+                    mx: 0.7,
+                    my: 0.35,
+                    borderRadius: "10px !important",
+                    bgcolor: isActive ? `${alpha("#2563eb", 0.1)} !important` : "transparent !important",
                     "&:hover": {
                       bgcolor: (t) =>
                         `${alpha(t.palette.primary.main, 0.1)} !important`,
@@ -313,18 +340,17 @@ export const NavbarActions = () => {
                 >
                   <ListItemIcon sx={{ minWidth: 28 }}>
                     {isActive ? (
-                      <CheckIcon
-                        fontSize="small"
-                        sx={{ color: "primary.main" }}
-                      />
-                    ) : null}
+                      <CheckCircleIcon fontSize="small" sx={{ color: "primary.main" }} />
+                    ) : (
+                      <CheckCircleOutlineIcon fontSize="small" sx={{ color: "text.disabled" }} />
+                    )}
                   </ListItemIcon>
                   <ListItemText
                     primary={perfil.nombre}
                     slotProps={{
                       primary: {
                         variant: "body2",
-                        fontWeight: isActive ? 600 : 400,
+                        fontWeight: isActive ? 600 : 500,
                         color: isActive ? "primary.main" : "text.primary",
                         noWrap: true,
                       },
@@ -344,7 +370,7 @@ export const NavbarActions = () => {
             logout();
           }}
           sx={{
-            py: 1,
+            py: 1.2,
             mb: 0.5,
             color: "error.main",
             "& .MuiListItemIcon-root": { color: "error.main" },
@@ -356,7 +382,14 @@ export const NavbarActions = () => {
           <ListItemIcon>
             <LogoutIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText>Cerrar sesión</ListItemText>
+          <ListItemText
+            primary="Cerrar sesión"
+            secondary="Salir del sistema"
+            slotProps={{
+              primary: { fontWeight: 600 },
+              secondary: { fontSize: "0.8rem", color: "text.secondary" },
+            }}
+          />
         </MenuItem>
       </Menu>
     </>
