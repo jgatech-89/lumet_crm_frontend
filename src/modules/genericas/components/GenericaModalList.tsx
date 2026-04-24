@@ -38,8 +38,8 @@ export function GenericaModalList({
                 minHeight: 0,
                 overflow: "hidden",
                 px: 0,
-                pt: 2.5,
-                pb: 2,
+                pt: 1,
+                pb: 1.5,
             }}
             actions={
                 <CustomButton

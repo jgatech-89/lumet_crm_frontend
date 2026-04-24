@@ -20,7 +20,7 @@ export const StyledDialog = styled(Dialog)(({ theme }) => ({
     padding: '20px 24px 16px 24px',
   },
   '& .MuiDialogContent-root': {
-    padding: '20px 24px 16px 24px',
+    padding: '0px 24px 16px 24px',
     borderBottom: 'none',
     flex: 1,
     minHeight: 0,

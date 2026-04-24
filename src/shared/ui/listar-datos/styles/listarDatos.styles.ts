@@ -101,7 +101,8 @@ export const listarToolbarSx = (variant: ListarDatosVariant) =>
     minWidth: 0,
     width: "100%",
     gap: 2,
-    py: 1.5,
+    /** Embebido (p. ej. modales): menos aire vertical; tarjeta mantiene respiro. */
+    py: variant === "embedded" ? 1 : 1.5,
     px: 2,
     ...(variant === "embedded"
       ? {
@@ -119,9 +120,10 @@ export const listarSummaryText: SxProps<Theme> = [
     color: "text.secondary",
     flex: "1 1 auto",
     minWidth: 0,
+    lineHeight: 1.35,
+    margin: 0,
     fontWeight: 400,
     letterSpacing: "normal",
-    lineHeight: 1.35,
   },
   (theme) =>
     theme.palette.mode === "dark"
