@@ -1,3 +1,4 @@
+import { alpha } from "@mui/material/styles";
 import type { SxProps, Theme } from "@mui/material/styles";
 import type { ListarDatosVariant } from "../types/listarDatos.types";
 
@@ -112,12 +113,25 @@ export const listarToolbarSx = (variant: ListarDatosVariant) =>
         }),
   }) satisfies SxProps<Theme>;
 
-export const listarSummaryText: SxProps<Theme> = {
-  fontSize: "0.88rem",
-  color: "text.secondary",
-  flex: "1 1 auto",
-  minWidth: 0,
-};
+export const listarSummaryText: SxProps<Theme> = [
+  {
+    fontSize: "0.88rem",
+    color: "text.secondary",
+    flex: "1 1 auto",
+    minWidth: 0,
+    fontWeight: 400,
+    letterSpacing: "normal",
+    lineHeight: 1.35,
+  },
+  (theme) =>
+    theme.palette.mode === "dark"
+      ? {
+          color: alpha(theme.palette.text.secondary, 0.88),
+          WebkitFontSmoothing: "auto",
+          MozOsxFontSmoothing: "auto",
+        }
+      : {},
+];
 
 export const listarListScroll: SxProps<Theme> = {
   overflow: "auto" as const,
