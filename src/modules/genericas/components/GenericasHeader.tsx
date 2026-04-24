@@ -23,7 +23,7 @@ export function GenericasHeader({ onNuevaGenerica }: GenericasHeaderProps) {
         <Typography variant="h4" sx={{ fontWeight: 700 }}>
           Gestión de Genéricas
         </Typography>
-        <Typography variant="subtitle1" sx={{ color: alpha("#0f172a", 0.58), mt: 0.3 }}>
+        <Typography variant="subtitle1" sx={{ color: "text.secondary" }}>
           Administra estados, módulos, permisos y relaciones del sistema
         </Typography>
       </Box>

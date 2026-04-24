@@ -12,3 +12,7 @@ export type UpdateGenericaPayload = {
     nombre: string;
     descripcion?: string;
 };
+
+export type ListValoresGenericaParams = {
+    generica: number;
+};

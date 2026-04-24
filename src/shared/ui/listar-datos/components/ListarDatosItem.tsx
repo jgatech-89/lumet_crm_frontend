@@ -1,4 +1,4 @@
-import { Box, ListItem, Stack, Typography } from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 import type { ReactNode } from "react";
 import { ActionIconButton } from "@/shared/ui/buttons/components/ActionIconButton";
 import { listarDatosStyles } from "../styles/listarDatos.styles";
@@ -7,20 +7,45 @@ import type {
   ListFieldConfig,
   PrimaryFieldConfig,
 } from "../types/listarDatos.types";
+import {
+  formatJoinedRowValues,
+  normalizeFieldKeys,
+} from "../utils/listarDatosFieldKeys";
+
+function resolveKeyBasedDisplay<T extends object>(
+  key: ListFieldConfig<T>["key"],
+  joinSeparator: string | undefined,
+  row: T
+): { display: string | T[keyof T] | undefined } {
+  const keys = normalizeFieldKeys(key);
+  if (keys.length > 1) {
+    const sep = joinSeparator ?? " - ";
+    return { display: formatJoinedRowValues(row, keys, sep) };
+  }
+  return { display: row[keys[0]!] as T[keyof T] | undefined };
+}
 
 function renderPrimaryContent<T extends object>(
   primary: PrimaryFieldConfig<T>,
   row: T
 ): ReactNode {
-  if ("key" in primary) {
-    const value = row[primary.key] as T[keyof T] | undefined;
+  if (typeof primary === "object" && primary !== null && "key" in primary) {
+    const { display } = resolveKeyBasedDisplay(
+      primary.key,
+      primary.joinSeparator,
+      row
+    );
     if (primary.render) {
-      return primary.render(value, row);
+      return primary.render(display, row);
     }
-    if (value == null && primary.emptyValue !== undefined) {
+    const empty =
+      display == null ||
+      display === "" ||
+      (typeof display === "string" && display.trim() === "");
+    if (empty && primary.emptyValue !== undefined) {
       return primary.emptyValue;
     }
-    return value as ReactNode;
+    return display as ReactNode;
   }
   return primary.render(row);
 }
@@ -29,14 +54,33 @@ function renderFieldLine<T extends object>(
   field: ListFieldConfig<T>,
   row: T
 ): ReactNode {
-  const value = row[field.key] as T[keyof T] | undefined;
+  const { display } = resolveKeyBasedDisplay(
+    field.key,
+    field.joinSeparator,
+    row
+  );
   if (field.render) {
-    return field.render(value, row);
+    return field.render(display, row);
   }
-  if (value == null && field.emptyValue !== undefined) {
+  const empty =
+    display == null ||
+    display === "" ||
+    (typeof display === "string" && display.trim() === "");
+  if (empty && field.emptyValue !== undefined) {
     return field.emptyValue;
   }
-  return value as ReactNode;
+  return display as ReactNode;
+}
+
+function fieldStableKey<T extends object>(
+  field: ListFieldConfig<T>,
+  index: number
+): string {
+  const k = field.key;
+  if (Array.isArray(k)) {
+    return `${k.map(String).join("|")}-${index}`;
+  }
+  return `${String(k)}-${index}`;
 }
 
 interface ListarDatosItemProps<T extends { id?: string | number }> {
@@ -45,6 +89,7 @@ interface ListarDatosItemProps<T extends { id?: string | number }> {
   fields?: ListFieldConfig<T>[];
   actions?: Action<T>[];
   selected?: boolean;
+  dense?: boolean;
 }
 
 export function ListarDatosItem<T extends { id?: string | number }>({
@@ -53,26 +98,16 @@ export function ListarDatosItem<T extends { id?: string | number }>({
   fields,
   actions,
   selected = false,
+  dense = false,
 }: ListarDatosItemProps<T>) {
   return (
-    <ListItem
-      sx={{
-        ...listarDatosStyles.listItem,
-        ...(selected ? listarDatosStyles.listItemSelected : {}),
-      }}
-      selected={selected}
-      disablePadding
+    <Box
+      sx={[
+        listarDatosStyles.listItem,
+        selected ? listarDatosStyles.listItemSelected : {},
+      ]}
     >
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "flex-start",
-          justifyContent: "space-between",
-          width: "100%",
-          px: 2,
-          py: 1.25,
-        }}
-      >
+      <Box sx={listarDatosStyles.listItemContent(dense)}>
         <Box sx={{ minWidth: 0, flex: 1 }}>
           <Typography component="div" sx={listarDatosStyles.primaryText}>
             {renderPrimaryContent(primary, row)}
@@ -80,9 +115,9 @@ export function ListarDatosItem<T extends { id?: string | number }>({
 
           {fields != null && fields.length > 0 ? (
             <Stack sx={listarDatosStyles.secondaryStack}>
-              {fields.map((field) => (
+              {fields.map((field, i) => (
                 <Typography
-                  key={String(field.key)}
+                  key={fieldStableKey(field, i)}
                   component="div"
                   sx={listarDatosStyles.secondaryLine}
                 >
@@ -107,6 +142,6 @@ export function ListarDatosItem<T extends { id?: string | number }>({
           </Box>
         ) : null}
       </Box>
-    </ListItem>
+    </Box>
   );
 }

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { listGenericasRequest } from "../api/genericasApi";
+import { listGenericasRequest, listValoresGenericaRequest } from "../api/genericasApi";
 import { getRequestErrorMessage } from "@/core/api/client";
-import type { Generica } from "../types/genericas.types";
+import type { Generica, ValorGenerica } from "../types/genericas.types";
 import type { SortOrder } from "../components/GenericasFilters";
 import type { ApiPagination } from "@/core/api/types";
 
@@ -20,6 +20,8 @@ export function useGenericas() {
   const [openModalGenericaList, setOpenModalGenericaList] = useState(false);
   const [genericaName, setGenericaName] = useState<string | null>(null);
   const [idGenerica, setIdGenerica] = useState<number | null>(null);
+  const [valoresGenerica, setValoresGenerica] = useState<ValorGenerica[]>([]);
+  const [loadingValoresGenerica, setLoadingValoresGenerica] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -41,6 +43,39 @@ export function useGenericas() {
       cancelled = true;
     };
   }, [page, refreshKey]);
+
+  useEffect(() => {
+    if (!openModalGenericaList || idGenerica == null || idGenerica <= 0) {
+      return;
+    }
+
+    let cancelled = false;
+    setLoadingValoresGenerica(true);
+    setValoresGenerica([]);
+
+    listValoresGenericaRequest({ generica: idGenerica })
+      .then((response) => {
+        if (!cancelled) setValoresGenerica(response.data);
+      })
+      .catch(() => {
+        if (!cancelled) setValoresGenerica([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingValoresGenerica(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [openModalGenericaList, idGenerica]);
+
+  const closeModalGenericaList = useCallback(() => {
+    setOpenModalGenericaList(false);
+    setIdGenerica(null);
+    setGenericaName(null);
+    setValoresGenerica([]);
+    setLoadingValoresGenerica(false);
+  }, []);
 
   const refetchGenericas = useCallback(() => {
     setRefreshKey((k) => k + 1);
@@ -99,5 +134,8 @@ export function useGenericas() {
     setGenericaName,
     idGenerica,
     setIdGenerica,
+    valoresGenerica,
+    loadingValoresGenerica,
+    closeModalGenericaList,
   };
 }

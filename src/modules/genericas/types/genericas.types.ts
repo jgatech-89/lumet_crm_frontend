@@ -4,3 +4,10 @@ export interface Generica {
   descripcion: string | null;
   created_at: string;
 }
+
+export interface ValorGenerica {
+  id: number;
+  nombre: string;
+  codigo: string;
+  created_at: string;
+}

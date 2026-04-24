@@ -1,15 +1,18 @@
 import { useMemo, useState, useCallback } from "react";
+import type { ReactNode } from "react";
 import type { PrimaryFieldConfig, ListFieldConfig } from "../types/listarDatos.types";
 import type { UseListarDatosParams, UseListarDatosResult } from "../types/listarDatos.types";
+import { normalizeFieldKeys } from "../utils/listarDatosFieldKeys";
 
 function isPrimaryKeyBased<T extends object>(
   primary: PrimaryFieldConfig<T>
 ): primary is {
-  key: keyof T;
-  render?: (value: T[keyof T] | undefined, row: T) => unknown;
-  emptyValue?: unknown;
+  key: ListFieldConfig<T>["key"];
+  joinSeparator?: string;
+  render?: (value: string | T[keyof T] | undefined, row: T) => ReactNode;
+  emptyValue?: ReactNode;
 } {
-  return "key" in primary;
+  return typeof primary === "object" && primary !== null && "key" in primary;
 }
 
 function defaultSearchKeys<T extends object>(
@@ -18,9 +21,11 @@ function defaultSearchKeys<T extends object>(
 ): (keyof T)[] {
   const keys = new Set<keyof T>();
   if (isPrimaryKeyBased(primary)) {
-    keys.add(primary.key);
+    normalizeFieldKeys(primary.key).forEach((k) => keys.add(k));
   }
-  fields?.forEach((f) => keys.add(f.key));
+  fields?.forEach((f) => {
+    normalizeFieldKeys(f.key).forEach((k) => keys.add(k));
+  });
   return Array.from(keys);
 }
 

@@ -1,7 +1,7 @@
 import { apiClient } from "@/core/api/client";
-import type { Generica } from "../types/genericas.types";
+import type { Generica, ValorGenerica } from "../types/genericas.types";
 import type { ApiResponse } from "@/core/api/types";
-import type { CreateGenericaPayload, ListGenericasParams, UpdateGenericaPayload } from "./genericasApi.types";
+import type { CreateGenericaPayload, ListGenericasParams, ListValoresGenericaParams, UpdateGenericaPayload } from "./genericasApi.types";
 
 
 export async function listGenericasRequest(params: ListGenericasParams) {
@@ -30,4 +30,17 @@ export async function updateGenericaRequest(payload: UpdateGenericaPayload): Pro
     { nombre: payload.nombre.trim(), descripcion: payload.descripcion?.trim() || "" }
   );
   return data.message;
+}
+
+export async function listValoresGenericaRequest(params: ListValoresGenericaParams) {
+  const response = await apiClient.get<ApiResponse<ValorGenerica[]>>("/genericas/valores-genericas/", {
+    params: {
+      generica: params.generica,
+    },
+  });
+  const { data } = response.data;
+  console.log(data);
+  return {
+    data: data ?? [],
+  };
 }

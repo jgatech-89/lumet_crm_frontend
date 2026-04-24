@@ -17,7 +17,7 @@ import type { Generica } from "../types/genericas.types";
 import { GenericaModalList } from "../components/GenericaModalList";
 
 export function GenericaPage() {
-  const totalGenericas = 128; // TODO: reemplazar con endpoint real
+  // const totalGenericas = 128; // TODO: reemplazar con endpoint real
 
   const {
     genericas,
@@ -40,6 +40,9 @@ export function GenericaPage() {
     genericaName,
     setGenericaName,
     setIdGenerica,
+    valoresGenerica,
+    loadingValoresGenerica,
+    closeModalGenericaList,
   } = useGenericas();
 
   const actions = getGenericaActions({
@@ -138,11 +141,11 @@ export function GenericaPage() {
                 Total Genéricas
               </Typography>
               <Typography sx={{ fontSize: "2rem", fontWeight: 700, lineHeight: 1.05, color: "text.primary" }}>
-                {totalGenericas}
+                {totalRegistros}
               </Typography>
-              <Typography variant="caption" sx={{ color: "success.main", fontWeight: 600, fontSize: "0.72rem" }}>
+              {/* <Typography variant="caption" sx={{ color: "success.main", fontWeight: 600, fontSize: "0.72rem" }}>
                 +12 este mes
-              </Typography>
+              </Typography> */}
             </Box>
           </Box>
         </Box>
@@ -171,6 +174,10 @@ export function GenericaPage() {
         <Table
           data={genericas}
           columnsConfig={[
+            {
+              key: "id",
+              label: "ID",
+            },
             {
               key: "nombre",
               label: "Nombre",
@@ -225,8 +232,10 @@ export function GenericaPage() {
 
       <GenericaModalList
         open={openModalGenericaList}
-        onClose={() => setOpenModalGenericaList(false)}
+        onClose={closeModalGenericaList}
         genericaName={genericaName ?? ""}
+        valoresGenerica={valoresGenerica}
+        loadingValoresGenerica={loadingValoresGenerica}
       />
     </Layout>
   );

@@ -1,15 +1,23 @@
 import SearchIcon from "@mui/icons-material/Search";
 import {
   Box,
+  Divider,
   InputAdornment,
-  List,
   Skeleton,
   Stack,
   TextField,
   Typography,
 } from "@mui/material";
-import { listarDatosStyles } from "../styles/listarDatos.styles";
-import type { ListarDatosProps } from "../types/listarDatos.types";
+import { Fragment } from "react";
+import {
+  listarDivider,
+  listarListScroll,
+  listarRootSx,
+  listarSummaryText,
+  listarToolbarSx,
+  listarDatosStyles,
+} from "../styles/listarDatos.styles";
+import type { ListarDatosProps, ListarDatosVariant } from "../types/listarDatos.types";
 import { useListarDatos } from "../hooks/useListarDatos";
 import { ListarDatosItem } from "./ListarDatosItem";
 
@@ -25,6 +33,7 @@ function defaultRowId<T extends { id?: string | number }>(row: T): string | numb
 export function ListarDatos<T extends { id?: string | number }>({
   data,
   primary,
+  summaryTitle = "Lista",
   fields,
   actions,
   loading = false,
@@ -36,10 +45,13 @@ export function ListarDatos<T extends { id?: string | number }>({
   getRowId = defaultRowId,
   selectedRowId = null,
   listMaxHeight = 320,
+  fillParentHeight = false,
   dense = false,
+  variant: variantProp = "embedded",
   sx,
 }: ListarDatosProps<T>) {
   const safeData = (data ?? EMPTY_DATA) as T[];
+  const variant: ListarDatosVariant = variantProp;
 
   const {
     filteredData,
@@ -64,34 +76,69 @@ export function ListarDatos<T extends { id?: string | number }>({
       : "No hay datos para mostrar.");
 
   return (
-    <Box sx={{ ...listarDatosStyles.root, ...sx }}>
+    <Box
+      sx={[
+        listarRootSx(variant),
+        fillParentHeight
+          ? {
+              flex: 1,
+              minHeight: 0,
+              maxHeight: "100%",
+              overflow: "hidden",
+            }
+          : {},
+        !fillParentHeight && variant === "card" ? { my: 2 } : {},
+        ...(sx != null ? (Array.isArray(sx) ? sx : [sx]) : []),
+      ]}
+    >
       {showToolbar ? (
         <Box
-          sx={{
-            ...listarDatosStyles.toolbar,
-            justifyContent: showSummary ? "space-between" : "flex-end",
-          }}
+          sx={[
+            listarToolbarSx(variant),
+            {
+              justifyContent: showSummary ? "space-between" : "flex-end",
+              ...(fillParentHeight ? { flexShrink: 0 } : {}),
+            },
+          ]}
         >
           {showSummary ? (
-            <Typography sx={listarDatosStyles.summaryText} component="div">
+            <Typography component="div" sx={listarSummaryText} variant="body2">
               {enableSearch && searchQuery.trim()
                 ? `Mostrando ${filteredCount} registro${filteredCount === 1 ? "" : "s"} de un total de ${totalCount}.`
-                : `Lista — Mostrando ${filteredCount} registro${filteredCount === 1 ? "" : "s"}${totalCount !== filteredCount ? ` de ${totalCount}` : ""}.`}
+                : `${summaryTitle} — Mostrando ${filteredCount} registro${filteredCount === 1 ? "" : "s"}${totalCount !== filteredCount ? ` de ${totalCount}` : ""}.`}
             </Typography>
           ) : null}
 
           {enableSearch ? (
             <TextField
               size="small"
+              color="primary"
               placeholder={searchPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              sx={{ minWidth: 200, maxWidth: 280 }}
+              sx={{
+                minWidth: 0,
+                flex: "0 1 280px",
+                maxWidth: { xs: "100%", sm: 280 },
+                width: { xs: "100%", sm: "auto" },
+                "& .MuiOutlinedInput-root": {
+                  width: "100%",
+                },
+                "& .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "primary.main",
+                },
+                "&:hover .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "primary.dark",
+                },
+                "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "primary.main",
+                },
+              }}
               slotProps={{
                 input: {
                   startAdornment: (
                     <InputAdornment position="start">
-                      <SearchIcon sx={{ color: "#9ca3af", fontSize: 20 }} />
+                      <SearchIcon color="primary" fontSize="small" />
                     </InputAdornment>
                   ),
                 },
@@ -100,42 +147,59 @@ export function ListarDatos<T extends { id?: string | number }>({
           ) : null}
         </Box>
       ) : null}
+      {showToolbar ? <Divider role="separator" component="div" sx={listarDivider} /> : null}
 
       <Box
         sx={{
-          ...listarDatosStyles.listScroll,
-          maxHeight: listMaxHeight,
+          ...listarListScroll,
+          ...(fillParentHeight
+            ? {
+                flex: 1,
+                minHeight: 0,
+                maxHeight: "none",
+                overflowY: "auto" as const,
+                overflowX: "hidden" as const,
+              }
+            : { maxHeight: listMaxHeight }),
         }}
       >
         {loading ? (
-          <Stack spacing={0}>
+          <Stack>
             {Array.from({ length: 5 }).map((_, i) => (
-              <Box key={`listar-skel-${i}`} sx={listarDatosStyles.skeletonItem}>
-                <Skeleton variant="text" width="55%" height={22} />
-                <Skeleton variant="text" width="40%" height={18} />
-              </Box>
+              <Fragment key={`listar-skel-${i}`}>
+                {i > 0 ? <Divider role="separator" component="div" sx={listarDivider} /> : null}
+                <Box sx={listarDatosStyles.skeletonItem(dense)}>
+                  <Skeleton variant="text" width="55%" height={22} />
+                  <Skeleton variant="text" width="40%" height={18} />
+                </Box>
+              </Fragment>
             ))}
           </Stack>
         ) : filteredData.length === 0 ? (
           <Box sx={listarDatosStyles.emptyBox}>{emptyContent}</Box>
         ) : (
-          <List dense={dense} sx={listarDatosStyles.list} disablePadding>
-            {filteredData.map((row) => {
+          <Stack component="div" spacing={0}>
+            {filteredData.map((row, index) => {
               const id = getRowId(row);
               const selected =
                 selectedRowId != null && selectedRowId === id;
               return (
-                <ListarDatosItem<T>
-                  key={String(id)}
-                  row={row}
-                  primary={primary}
-                  fields={fields}
-                  actions={actions}
-                  selected={selected}
-                />
+                <Fragment key={String(id)}>
+                  {index > 0 ? (
+                    <Divider role="separator" component="div" sx={listarDivider} />
+                  ) : null}
+                  <ListarDatosItem<T>
+                    row={row}
+                    primary={primary}
+                    fields={fields}
+                    actions={actions}
+                    selected={selected}
+                    dense={dense}
+                  />
+                </Fragment>
               );
             })}
-          </List>
+          </Stack>
         )}
       </Box>
     </Box>
