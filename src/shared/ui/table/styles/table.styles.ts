@@ -1,41 +1,61 @@
 export const tableStyles = {
   container: {
-    backgroundColor: "#fff",
+    backgroundColor: "background.paper",
     borderRadius: "12px",
-    border: "1px solid #e5e7eb",
+    border: "1px solid",
+    borderColor: "divider",
     overflow: "hidden",
+    boxShadow: (theme: { palette: { mode: string } }) =>
+      theme.palette.mode === "dark"
+        ? "0 6px 18px rgba(0, 0, 0, 0.28)"
+        : "0 4px 14px rgba(15, 23, 42, 0.05)",
   },
 
   headerCell: {
-    backgroundColor: "#f3f4f6",
-    fontWeight: 600,
-    fontSize: "0.85rem",
-    color: "#6b7280",
-    padding: "12px",
+    backgroundColor: "background.default",
+    fontWeight: 700,
+    fontSize: "0.7rem",
+    letterSpacing: "0.08em",
+    color: "text.secondary",
+    textTransform: "uppercase",
+    padding: "10px 14px",
+    borderBottom: "1px solid",
+    borderColor: "divider",
+    textAlign: "left",
+    whiteSpace: "nowrap",
   },
 
   row: {
     transition: "all 0.2s ease",
     "&:hover": {
-      backgroundColor: "#f9fafb",
+      backgroundColor: "action.hover",
     },
   },
 
   cell: {
-    padding: "12px",
-    fontSize: "0.9rem",
-    color: "#374151",
-    borderBottom: "1px solid #f1f1f1",
+    padding: "14px",
+    fontSize: "0.88rem",
+    color: "text.primary",
+    borderBottom: "1px solid",
+    borderColor: "divider",
+    verticalAlign: "middle",
   },
 
   footer: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: "12px 16px",
-    fontSize: "0.85rem",
-    color: "#6b7280",
-    borderTop: "1px solid #eee",
+    gap: "12px",
+    padding: "10px 14px",
+    fontSize: "0.78rem",
+    color: "text.secondary",
+    borderTop: "1px solid",
+    borderColor: "divider",
+  },
+
+  footerSummary: {
+    fontWeight: 400,
+    color: "text.secondary",
   },
 
   paginationContainer: {
@@ -45,32 +65,54 @@ export const tableStyles = {
   },
 
   paginationButton: {
-    border: "none",
-    background: "transparent",
-    color: "#374151",
-    borderRadius: "8px",
-    width: "32px",
-    height: "32px",
+    border: "1px solid",
+    borderColor: "divider",
+    background: "background.paper",
+    color: "text.secondary",
+    borderRadius: "10px",
+    width: "34px",
+    height: "34px",
     cursor: "pointer",
     fontSize: "0.85rem",
+    fontWeight: 600,
     padding: 0,
+    transition: "all 0.2s ease",
+    "&:hover": {
+      borderColor: "primary.light",
+      backgroundColor: "action.hover",
+      color: "primary.main",
+    },
   },
 
   paginationButtonActive: {
-    backgroundColor: "#3b82f6",
-    color: "#fff",
+    borderColor: "primary.main",
+    backgroundColor: "primary.main",
+    color: "primary.contrastText",
     fontWeight: 600,
+    boxShadow: (theme: { palette: { mode: string } }) =>
+      theme.palette.mode === "dark"
+        ? "0 6px 14px rgba(37, 99, 235, 0.45)"
+        : "0 6px 14px rgba(37, 99, 235, 0.25)",
   },
 
   paginationIcon: {
-    width: "28px",
-    height: "28px",
-    borderRadius: "6px",
+    width: "30px",
+    height: "30px",
+    borderRadius: "8px",
+    border: "1px solid",
+    borderColor: "divider",
+    backgroundColor: "background.paper",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     cursor: "pointer",
-    color: "#6b7280",
+    color: "text.secondary",
+    transition: "all 0.2s ease",
+    "&:hover": {
+      borderColor: "primary.light",
+      backgroundColor: "action.hover",
+      color: "primary.main",
+    },
   },
 
   paginationIconDisabled: {

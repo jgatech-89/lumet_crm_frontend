@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+import type { ReactNode } from "react";
 import {
   Table as MuiTable,
   TableBody,
@@ -9,43 +11,125 @@ import { TableHeader } from "./TableHeader";
 import { TableRow } from "./TableRow";
 import { TablePagination } from "./TablePagination";
 import { TableFilters } from "./TableFilters";
-import { useTable } from "../hooks/useTable";
 import type { Column, Action } from "./TableRow";
 import type { FilterConfig } from "./TableFilters";
+import type { ApiPagination } from "@/core/api/types";
+
+const EMPTY_DATA: unknown[] = [];
+
+export type ColumnsConfig<T> = {
+  key: keyof T;
+  label?: string;
+  render?: (value: T[keyof T] | undefined, row: T) => ReactNode;
+  emptyValue?: ReactNode;
+};
+
+export type TableServerPagination = ApiPagination;
+
+function formatKeyToLabel(key: string): string {
+  const withSpaces = key
+    .replace(/_/g, " ")
+    .replace(/([a-z])([A-Z])/g, "$1 $2");
+
+  return withSpaces
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+}
+
+function autoGenerateColumns<T>(data: T[]): Column<T>[] {
+  const first = data[0];
+  if (first == null || typeof first !== "object") {
+    return [];
+  }
+
+  return (Object.keys(first) as (keyof T)[]).map((key) => ({
+    key,
+    label: formatKeyToLabel(String(key)),
+  }));
+}
+
+function columnsFromConfig<T>(config: ColumnsConfig<T>[]): Column<T>[] {
+  return config.map((c) => {
+    const label = c.label ?? formatKeyToLabel(String(c.key));
+    if (c.render) {
+      const customRender = c.render;
+      return {
+        key: c.key,
+        label,
+        renderValue: (value: T[keyof T] | undefined, row: T) =>
+          customRender(value, row),
+      } satisfies Column<T>;
+    }
+    if (c.emptyValue !== undefined) {
+      const placeholder = c.emptyValue;
+      return {
+        key: c.key,
+        label,
+        renderValue: (value: T[keyof T] | undefined) =>
+          value == null ? placeholder : (value as ReactNode),
+      } satisfies Column<T>;
+    }
+    return { key: c.key, label };
+  });
+}
+
+function resolveColumns<T>(
+  columns: Column<T>[] | undefined,
+  columnsConfig: ColumnsConfig<T>[] | undefined,
+  data: T[]
+): Column<T>[] {
+  if (columns !== undefined) {
+    return columns;
+  }
+  if (columnsConfig !== undefined) {
+    return columnsFromConfig(columnsConfig);
+  }
+  return autoGenerateColumns(data);
+}
 
 export interface TableProps<T> {
   data: T[];
-  columns: Column<T>[];
+  columns?: Column<T>[];
+
+  columnsConfig?: ColumnsConfig<T>[];
   actions?: Action<T>[];
   filters?: FilterConfig[];
-  rowsPerPage?: number;
-  /** Paginación controlada (página 1-based). Si no se pasa, la tabla pagina sola. */
-  pagination?: {
-    page: number;
-    onPageChange: (page: number) => void;
-  };
+  pagination?: ApiPagination | null;
+  onPageChange?: (page: number) => void;
   actionsColumnLabel?: string;
+  footerSummaryText?: string;
 }
 
 export const Table = <T extends { id?: string | number },>({
   data,
   columns,
+  columnsConfig,
   actions,
   filters,
-  rowsPerPage = 5,
   pagination,
+  onPageChange,
   actionsColumnLabel,
+  footerSummaryText,
 }: TableProps<T>) => {
-  const internal = useTable();
-  const page = pagination?.page ?? internal.page;
-  const setPage = pagination?.onPageChange ?? internal.setPage;
+  const safeData = (data ?? EMPTY_DATA) as T[];
 
-  const safeData = data ?? [];
-  const startIndex = (page - 1) * rowsPerPage;
-  const paginatedData = safeData.slice(startIndex, startIndex + rowsPerPage);
-  const total = safeData.length;
-  const start = total === 0 ? 0 : startIndex + 1;
-  const end = Math.min(startIndex + rowsPerPage, total);
+  const resolvedColumns = useMemo(
+    () => resolveColumns(columns, columnsConfig, safeData),
+    [columns, columnsConfig, safeData]
+  );
+
+  const showingText = useMemo(() => {
+    if (footerSummaryText) {
+      return footerSummaryText;
+    }
+    if (pagination == null) {
+      return `Mostrando ${safeData.length}`;
+    }
+    const total = Number(pagination.total ?? 0);
+    return `Mostrando ${safeData.length} de ${total}`;
+  }, [footerSummaryText, pagination, safeData.length]);
 
   return (
     <Box sx={tableStyles.container}>
@@ -54,17 +138,17 @@ export const Table = <T extends { id?: string | number },>({
       <TableContainer>
         <MuiTable>
           <TableHeader
-            columns={columns}
+            columns={resolvedColumns}
             hasActions={!!actions}
             actionsColumnLabel={actionsColumnLabel}
           />
 
           <TableBody>
-            {paginatedData.map((row) => (
+            {safeData.map((row) => (
               <TableRow
                 key={String(row.id ?? JSON.stringify(row))}
                 row={row}
-                columns={columns}
+                columns={resolvedColumns}
                 actions={actions}
               />
             ))}
@@ -72,18 +156,15 @@ export const Table = <T extends { id?: string | number },>({
         </MuiTable>
       </TableContainer>
 
-      <Box sx={tableStyles.footer}>
-        <span>
-          Mostrando {start}–{end} de {total}
-        </span>
-
-        <TablePagination
-          page={page}
-          total={total}
-          rowsPerPage={rowsPerPage}
-          onPageChange={setPage}
-        />
-      </Box>
+      {pagination != null && (
+        <Box sx={tableStyles.footer}>
+          <Box sx={tableStyles.footerSummary}>{showingText}</Box>
+          <TablePagination
+            pagination={pagination}
+            onPageChange={onPageChange}
+          />
+        </Box>
+      )}
     </Box>
   );
 };

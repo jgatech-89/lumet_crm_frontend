@@ -6,17 +6,18 @@ const INDICATOR_W = 5;
 const INDICATOR_RADIUS = 6;
 
 export const sidebarStyles = {
-  container: (theme: Theme) => ({
+  container: (theme: Theme, compact = false) => ({
     width: 264,
+    ...(compact ? { width: 104 } : {}),
     flexShrink: 0,
     alignSelf: "stretch",
     display: "flex",
     flexDirection: "column" as const,
     overflowY: "auto" as const,
     bgcolor: "background.paper",
-    pt: 3,
-    pb: 2,
-    px: 1.5,
+    pt: compact ? 1.5 : 3,
+    pb: compact ? 1.25 : 2,
+    px: compact ? 0.75 : 1.5,
     boxShadow:
       theme.palette.mode === "dark"
         ? `1px 0 8px ${alpha(theme.palette.common.black, 0.4)}`
@@ -32,7 +33,7 @@ export const sidebarStyles = {
     listStyle: "none",
   },
 
-  item: (theme: Theme) => {
+  item: (theme: Theme, compact = false) => {
     const isDark = theme.palette.mode === "dark";
 
     const activeBg = isDark
@@ -48,9 +49,9 @@ export const sidebarStyles = {
       display: "flex",
       alignItems: "center",
       borderRadius: `${RADIUS}px`,
-      px: "14px",
-      py: "10px",
-      minHeight: 44,
+      px: compact ? "8px" : "14px",
+      py: compact ? "8px" : "10px",
+      minHeight: compact ? 56 : 44,
       overflow: "hidden" as const,
       textDecoration: "none",
       color: theme.palette.text.secondary,
@@ -73,10 +74,21 @@ export const sidebarStyles = {
         "&::after": {
           content: '""',
           position: "absolute" as const,
-          right: 0,
-          top: "1%",
-          bottom: "1%",
-          width: INDICATOR_W,
+          ...(compact
+            ? {
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: "auto",
+                width: "100%",
+                height: 3,
+              }
+            : {
+                right: 0,
+                top: "1%",
+                bottom: "1%",
+                width: INDICATOR_W,
+              }),
           borderRadius: `${INDICATOR_RADIUS}px`,
           bgcolor: theme.palette.primary.main,
         },
@@ -121,4 +133,25 @@ export const sidebarStyles = {
       fontWeight: 600,
     },
   }),
+
+  compactItemInner: {
+    display: "flex",
+    flexDirection: "column" as const,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 0.45,
+    width: "100%",
+    minWidth: 0,
+    textAlign: "center" as const,
+  },
+
+  compactItemLabel: {
+    fontSize: "0.72rem",
+    lineHeight: 1.2,
+    fontWeight: 500,
+    width: "100%",
+    whiteSpace: "normal" as const,
+    wordBreak: "break-word" as const,
+    textAlign: "center" as const,
+  },
 };

@@ -23,42 +23,38 @@ declare module "@mui/material/styles" {
   }
 }
 
-/** Primary unificado (Material Blue 500) — mismo valor en light y dark */
 const PRIMARY_MAIN = "#2196f3";
 const PRIMARY_LIGHT = "#42a5f5";
 const PRIMARY_DARK = "#1976d2";
 
-const autofillInputStyles = (isDark: boolean) => ({
+const inputAutofillLight = "#ffffff";
+const inputAutofillDark = darkUi.inputBg;
+
+const autofillInputStyles = (isDark: boolean) => {
+  const bg = isDark ? inputAutofillDark : inputAutofillLight;
+  return {
   "& input:-webkit-autofill": {
-    WebkitBoxShadow: isDark
-      ? "0 0 0 1000px #0F172A inset"
-      : "0 0 0 1000px #FFFFFF inset",
-    WebkitTextFillColor: isDark ? "#E2E8F0" : "#111827",
+    WebkitBoxShadow: `0 0 0 1000px ${bg} inset`,
+    WebkitTextFillColor: isDark ? darkUi.inputText : "#111827",
     transition: "background-color 9999s ease-in-out 0s",
   },
   "& input:-webkit-autofill:hover": {
     WebkitBoxShadow: isDark
-      ? "0 0 0 1000px #0F172A inset"
+      ? `0 0 0 1000px ${darkUi.inputBgHover} inset`
       : "0 0 0 1000px #FFFFFF inset",
-    WebkitTextFillColor: isDark ? "#E2E8F0" : "#111827",
+    WebkitTextFillColor: isDark ? darkUi.inputText : "#111827",
   },
   "& input:-webkit-autofill:focus": {
-    WebkitBoxShadow: isDark
-      ? "0 0 0 1000px #0F172A inset"
-      : "0 0 0 1000px #FFFFFF inset",
-    WebkitTextFillColor: isDark ? "#E2E8F0" : "#111827",
+    WebkitBoxShadow: `0 0 0 1000px ${bg} inset`,
+    WebkitTextFillColor: isDark ? darkUi.inputText : "#111827",
   },
   "& input:-webkit-autofill:active": {
-    WebkitBoxShadow: isDark
-      ? "0 0 0 1000px #0F172A inset"
-      : "0 0 0 1000px #FFFFFF inset",
-    WebkitTextFillColor: isDark ? "#E2E8F0" : "#111827",
+    WebkitBoxShadow: `0 0 0 1000px ${bg} inset`,
+    WebkitTextFillColor: isDark ? darkUi.inputText : "#111827",
   },
-});
+};
+};
 
-/**
- * Tema único de la app (login + resto).
- */
 export function createAppTheme(mode: "light" | "dark") {
   const isDark = mode === "dark";
   const paletteWhite = "#ffffff";
@@ -133,15 +129,66 @@ export function createAppTheme(mode: "light" | "dark") {
       MuiInputLabel: {
         styleOverrides: {
           root: {
+            transition: transition(["color"], "fast"),
             "&.Mui-focused": {
-              color: PRIMARY_MAIN,
+              color: isDark ? darkUi.inputFocusBorder : PRIMARY_MAIN,
             },
             ...(isDark
               ? {
-                  color: "rgba(226, 232, 240, 0.55)",
+                  color: darkUi.inputLabel,
+                  "&.Mui-error": {
+                    color: "#F87171",
+                  },
                 }
               : {}),
+            "&.MuiInputLabel-outlined": {
+              "&.MuiInputLabel-shrink": {
+                zIndex: 1,
+                padding: "0 4px",
+                backgroundColor: isDark ? darkUi.inputBg : paletteWhite,
+                ...(isDark
+                  ? {
+                      color: darkUi.inputText,
+                    }
+                  : {}),
+              },
+            },
+            "&.Mui-disabled": isDark
+              ? {
+                  color: "rgba(161, 161, 170, 0.45)",
+                }
+              : {},
           },
+        },
+      },
+      MuiFormHelperText: {
+        styleOverrides: {
+          root: isDark
+            ? {
+                color: "rgba(161, 161, 170, 0.9)",
+                marginTop: 6,
+                "&.Mui-disabled": { opacity: 0.5 },
+              }
+            : { marginTop: 6 },
+        },
+      },
+      MuiInputBase: {
+        styleOverrides: {
+          root: isDark
+            ? {
+                "&.Mui-disabled": {
+                  cursor: "not-allowed",
+                },
+              }
+            : {},
+          input: isDark
+            ? {
+                "&::placeholder": {
+                  color: darkUi.inputPlaceholder,
+                  opacity: 1,
+                },
+              }
+            : {},
         },
       },
       MuiOutlinedInput: {
@@ -150,7 +197,33 @@ export function createAppTheme(mode: "light" | "dark") {
             borderRadius: isDark ? "12px" : 12,
             backgroundColor: isDark ? darkUi.inputBg : paletteWhite,
             color: isDark ? darkUi.inputText : undefined,
-            transition: transition(["border-color", "box-shadow", "background-color"]),
+            transition: transition([
+              "border-color",
+              "box-shadow",
+              "background-color",
+            ]),
+            ...(isDark
+              ? {
+                  "&.Mui-disabled": {
+                    backgroundColor: "rgba(34, 34, 38, 0.5)",
+                    color: "rgba(244, 244, 245, 0.38)",
+                    pointerEvents: "auto",
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255, 255, 255, 0.08)",
+                    },
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(255, 255, 255, 0.1)",
+                    },
+                    "&.Mui-focused": {
+                      boxShadow: "none",
+                    },
+                  },
+                }
+              : {
+                  "&.Mui-disabled .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(0, 0, 0, 0.12)",
+                  },
+                }),
             "&:hover": isDark
               ? {
                   backgroundColor: darkUi.inputBgHover,
@@ -161,7 +234,8 @@ export function createAppTheme(mode: "light" | "dark") {
           notchedOutline: isDark
             ? {
                 borderColor: darkUi.inputBorder,
-                borderWidth: "1px",
+                borderWidth: 1,
+                transition: transition(["border-color", "box-shadow"], "fast"),
               }
             : {},
         },
@@ -176,7 +250,7 @@ export function createAppTheme(mode: "light" | "dark") {
               color: isDark ? darkUi.inputText : undefined,
               "& fieldset": {
                 borderColor: isDark ? darkUi.inputBorder : "rgba(0,0,0,0.08)",
-                borderWidth: isDark ? "1px" : undefined,
+                borderWidth: isDark ? 1 : undefined,
               },
               "&:hover": {
                 ...(isDark ? { backgroundColor: darkUi.inputBgHover } : {}),
@@ -184,22 +258,16 @@ export function createAppTheme(mode: "light" | "dark") {
                   borderColor: isDark ? darkUi.inputBorderHover : "rgba(0,0,0,0.15)",
                 },
               },
+              "&.Mui-focused": isDark
+                ? {
+                    boxShadow: "none",
+                  }
+                : {},
               "&.Mui-focused fieldset": {
-                borderWidth: "1px",
+                borderWidth: 1,
                 borderColor: isDark ? darkUi.inputFocusBorder : PRIMARY_MAIN,
               },
             },
-            ...(isDark
-              ? {
-                  "&:focus-within .MuiOutlinedInput-root:not(.Mui-error)": {
-                    boxShadow: darkUi.inputFocusShadow,
-                  },
-                }
-              : {
-                  "&:focus-within .MuiOutlinedInput-root:not(.Mui-error)": {
-                    boxShadow: "0 0 0 1px rgba(33, 150, 243, 0.25)",
-                  },
-                }),
           },
         },
       },

@@ -6,6 +6,7 @@ import { tableStyles } from "../styles/table.styles";
 export interface Column<T> {
   key: keyof T;
   label: string;
+  renderValue?: (value: T[keyof T] | undefined, row: T) => ReactNode;
   render?: (row: T) => ReactNode;
 }
 
@@ -22,6 +23,16 @@ interface TableRowProps<T> {
   actions?: Action<T>[];
 }
 
+function getCellContent<T>(col: Column<T>, row: T): ReactNode {
+  if (col.renderValue) {
+    return col.renderValue(row[col.key] as T[keyof T] | undefined, row);
+  }
+  if (col.render) {
+    return col.render(row);
+  }
+  return row[col.key] as ReactNode;
+}
+
 export const TableRow = <T extends { id?: string | number },>({
   row,
   columns,
@@ -31,13 +42,13 @@ export const TableRow = <T extends { id?: string | number },>({
     <MuiRow sx={tableStyles.row}>
       {columns.map((col) => (
         <TableCell sx={tableStyles.cell} key={String(col.key)}>
-          {col.render ? col.render(row) : (row[col.key] as ReactNode)}
+          {getCellContent(col, row)}
         </TableCell>
       ))}
 
       {actions && actions.length > 0 && (
-        <TableCell align="right">
-          <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end" }}>
+        <TableCell sx={{ ...tableStyles.cell, width: "132px", px: 1 }} align="center">
+          <Box sx={{ display: "flex", gap: 0.25, justifyContent: "center", alignItems: "center" }}>
             {actions.map((action, i) => (
               <ActionIconButton
                 key={`${action.label}-${i}`}

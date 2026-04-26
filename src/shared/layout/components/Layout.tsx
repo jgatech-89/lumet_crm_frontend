@@ -1,7 +1,7 @@
 import { Box, Drawer, IconButton, useMediaQuery } from "@mui/material";
 import { ChevronRight, ChevronLeft } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import { Navbar } from "../Navbar/components/Navbar";
 import { Sidebar } from "../Sidebar/components/Sidebar";
@@ -9,6 +9,8 @@ import { Footer } from "../Footer/components/Footer";
 import { DURATION, EASING } from "@/core/theme/motion";
 
 const SIDEBAR_WIDTH = 250;
+const SIDEBAR_PHONE_WIDTH = 112;
+const DESKTOP_SIDEBAR_COLLAPSED_KEY = "layout.desktopSidebarCollapsed";
 
 interface LayoutProps {
   children: ReactNode;
@@ -27,7 +29,23 @@ export const Layout = ({
 }: LayoutProps) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const isPhone = useMediaQuery(theme.breakpoints.down("sm"));
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [phoneSidebarVisible, setPhoneSidebarVisible] = useState(true);
+  const [desktopSidebarCollapsed, setDesktopSidebarCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem(DESKTOP_SIDEBAR_COLLAPSED_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(DESKTOP_SIDEBAR_COLLAPSED_KEY, desktopSidebarCollapsed ? "1" : "0");
+    } catch {
+    }
+  }, [desktopSidebarCollapsed]);
 
   const handleOpenSidebar = () => {
     setMobileSidebarOpen(true);
@@ -38,7 +56,8 @@ export const Layout = ({
   };
 
   const renderDesktopSidebar = showSidebar && !isMobile;
-  const renderMobileSidebar = showSidebar && isMobile;
+  const renderMobileSidebar = showSidebar && isMobile && !isPhone;
+  const renderPhoneSidebar = showSidebar && isPhone;
 
   return (
     <Box
@@ -85,9 +104,9 @@ export const Layout = ({
           ModalProps={{ keepMounted: true }}
           PaperProps={{
             sx: {
-              width: SIDEBAR_WIDTH,
+              width: isPhone ? SIDEBAR_PHONE_WIDTH : SIDEBAR_WIDTH,
               boxSizing: "border-box",
-              bgcolor: "background.default",
+              bgcolor: "background.paper",
               border: "none",
               boxShadow: "none",
             },
@@ -102,7 +121,7 @@ export const Layout = ({
               <ChevronLeft fontSize="small" />
             </IconButton>
           </Box>
-          <Sidebar />
+          <Sidebar compact={isPhone} />
         </Drawer>
       ) : null}
 
@@ -114,7 +133,90 @@ export const Layout = ({
           bgcolor: "background.default",
         }}
       >
-        {renderDesktopSidebar ? <Sidebar /> : null}
+        {renderDesktopSidebar ? (
+          <Box sx={{ position: "relative", flexShrink: 0, bgcolor: "background.paper" }}>
+            <Sidebar compact={desktopSidebarCollapsed} />
+            <IconButton
+              size="small"
+              onClick={() => setDesktopSidebarCollapsed((prev) => !prev)}
+              aria-label={desktopSidebarCollapsed ? "Expandir menú lateral" : "Colapsar menú lateral"}
+              sx={{
+                position: "absolute",
+                top: 8,
+                right: 6,
+                zIndex: 2,
+                width: 24,
+                height: 24,
+                bgcolor: "background.paper",
+                border: "1px solid",
+                borderColor: "divider",
+                "&:hover": {
+                  bgcolor: "action.hover",
+                },
+              }}
+            >
+              {desktopSidebarCollapsed ? <ChevronRight fontSize="small" /> : <ChevronLeft fontSize="small" />}
+            </IconButton>
+          </Box>
+        ) : null}
+
+        {renderPhoneSidebar ? (
+          phoneSidebarVisible ? (
+            <Box sx={{ position: "relative", flexShrink: 0, bgcolor: "background.paper" }}>
+              <Sidebar compact />
+              <IconButton
+                size="small"
+                onClick={() => setPhoneSidebarVisible(false)}
+                aria-label="Ocultar menú lateral"
+                sx={{
+                  position: "absolute",
+                  top: 8,
+                  right: 6,
+                  zIndex: 2,
+                  width: 24,
+                  height: 24,
+                  bgcolor: "background.paper",
+                  border: "1px solid",
+                  borderColor: "divider",
+                  "&:hover": {
+                    bgcolor: "action.hover",
+                  },
+                }}
+              >
+                <ChevronLeft fontSize="small" />
+              </IconButton>
+            </Box>
+          ) : (
+            <Box
+              sx={{
+                width: 32,
+                flexShrink: 0,
+                display: "flex",
+                justifyContent: "center",
+                pt: 1.5,
+                bgcolor: "transparent",
+              }}
+            >
+              <IconButton
+                size="small"
+                onClick={() => setPhoneSidebarVisible(true)}
+                aria-label="Mostrar menú lateral"
+                sx={{
+                  width: 24,
+                  height: 24,
+                  bgcolor: "background.paper",
+                  border: "1px solid",
+                  borderColor: "divider",
+                  "&:hover": {
+                    bgcolor: "action.hover",
+                  },
+                }}
+              >
+                <ChevronRight fontSize="small" />
+              </IconButton>
+            </Box>
+          )
+        ) : null}
 
         <Box
           sx={{

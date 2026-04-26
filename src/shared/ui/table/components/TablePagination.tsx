@@ -6,38 +6,70 @@ import {
   LastPage,
 } from "@mui/icons-material";
 import { tableStyles } from "../styles/table.styles";
+import type { ApiPagination } from "@/core/api/types";
 
-interface Props {
-  page: number;
-  total: number;
-  rowsPerPage: number;
-  onPageChange: (page: number) => void;
+export interface TablePaginationProps {
+  pagination: ApiPagination;
+  onPageChange?: (page: number) => void;
 }
 
 export const TablePagination = ({
-  page,
-  total,
-  rowsPerPage,
+  pagination,
   onPageChange,
-}: Props) => {
-  const totalPages = Math.ceil(total / rowsPerPage);
+}: TablePaginationProps) => {
+  const safeTotal = Math.max(0, pagination.totalPages ?? 0);
+  const rawPage = Number(pagination.page);
+  const reportedPage =
+    Number.isFinite(rawPage) && rawPage >= 1 ? rawPage : 1;
+
+  const currentPage =
+    safeTotal > 0
+      ? Math.min(Math.max(1, reportedPage), safeTotal)
+      : Math.max(1, reportedPage);
+
+  const effectiveHasPrev =
+    safeTotal > 0 ? currentPage > 1 : Boolean(pagination.previous);
+  const effectiveHasNext =
+    safeTotal > 0 ? currentPage < safeTotal : Boolean(pagination.next);
+
+  const canGoFirst = currentPage > 1 && !!onPageChange;
+  const canGoLast =
+    safeTotal > 0 && currentPage < safeTotal && !!onPageChange;
+
   const visiblePages: number[] = [];
   const maxVisible = 5;
 
-  let start = Math.max(1, page - 2);
-  let end = Math.min(totalPages, start + maxVisible - 1);
-  if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
+  if (safeTotal > 0 && onPageChange) {
+    let start = Math.max(1, currentPage - 2);
+    const end = Math.min(safeTotal, start + maxVisible - 1);
+    if (end - start < maxVisible - 1) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+    for (let i = start; i <= end; i++) visiblePages.push(i);
+    if (!visiblePages.includes(currentPage)) {
+      visiblePages.length = 0;
+      const s = Math.max(
+        1,
+        Math.min(currentPage, safeTotal) - Math.floor(maxVisible / 2)
+      );
+      const e = Math.min(safeTotal, s + maxVisible - 1);
+      const adjustedStart = Math.max(1, e - maxVisible + 1);
+      for (let i = adjustedStart; i <= e; i++) visiblePages.push(i);
+    }
+  }
 
-  for (let i = start; i <= end; i++) visiblePages.push(i);
+  const goTo = (target: number) => onPageChange?.(target);
+  const goPrev = () => onPageChange?.(reportedPage - 1);
+  const goNext = () => onPageChange?.(reportedPage + 1);
 
   return (
     <Box sx={tableStyles.paginationContainer}>
       <Box
         sx={{
           ...tableStyles.paginationIcon,
-          ...(page === 1 ? tableStyles.paginationIconDisabled : {}),
+          ...(!canGoFirst ? tableStyles.paginationIconDisabled : {}),
         }}
-        onClick={() => page !== 1 && onPageChange(1)}
+        onClick={() => canGoFirst && goTo(1)}
       >
         <FirstPage fontSize="small" />
       </Box>
@@ -45,9 +77,9 @@ export const TablePagination = ({
       <Box
         sx={{
           ...tableStyles.paginationIcon,
-          ...(page === 1 ? tableStyles.paginationIconDisabled : {}),
+          ...(!effectiveHasPrev ? tableStyles.paginationIconDisabled : {}),
         }}
-        onClick={() => page !== 1 && onPageChange(page - 1)}
+        onClick={() => effectiveHasPrev && goPrev()}
       >
         <ChevronLeft fontSize="small" />
       </Box>
@@ -56,10 +88,11 @@ export const TablePagination = ({
         <Box
           key={p}
           component="button"
-          onClick={() => onPageChange(p)}
+          type="button"
+          onClick={() => goTo(p)}
           sx={{
             ...tableStyles.paginationButton,
-            ...(p === page ? tableStyles.paginationButtonActive : {}),
+            ...(p === currentPage ? tableStyles.paginationButtonActive : {}),
           }}
         >
           {p}
@@ -69,9 +102,9 @@ export const TablePagination = ({
       <Box
         sx={{
           ...tableStyles.paginationIcon,
-          ...(page === totalPages ? tableStyles.paginationIconDisabled : {}),
+          ...(!effectiveHasNext ? tableStyles.paginationIconDisabled : {}),
         }}
-        onClick={() => page !== totalPages && onPageChange(page + 1)}
+        onClick={() => effectiveHasNext && goNext()}
       >
         <ChevronRight fontSize="small" />
       </Box>
@@ -79,9 +112,9 @@ export const TablePagination = ({
       <Box
         sx={{
           ...tableStyles.paginationIcon,
-          ...(page === totalPages ? tableStyles.paginationIconDisabled : {}),
+          ...(!canGoLast ? tableStyles.paginationIconDisabled : {}),
         }}
-        onClick={() => page !== totalPages && onPageChange(totalPages)}
+        onClick={() => canGoLast && goTo(safeTotal)}
       >
         <LastPage fontSize="small" />
       </Box>

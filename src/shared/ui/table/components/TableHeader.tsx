@@ -18,12 +18,19 @@ export const TableHeader = <T,>({
       <TableRow>
         {columns.map((col) => (
           <TableCell key={String(col.key)} sx={tableStyles.headerCell}>
-            {col.label}
+            {String(col.label)}
           </TableCell>
         ))}
 
         {hasActions && (
-          <TableCell sx={{ ...tableStyles.headerCell, textAlign: "right" }}>
+          <TableCell
+            sx={{
+              ...tableStyles.headerCell,
+              textAlign: "center",
+              width: "132px",
+              px: 1.5,
+            }}
+          >
             {actionsColumnLabel}
           </TableCell>
         )}
