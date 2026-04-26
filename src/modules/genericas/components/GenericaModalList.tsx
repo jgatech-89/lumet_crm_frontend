@@ -1,9 +1,13 @@
 import { CustomModal } from "@/shared/ui/modal/components/CustomModal";
+import { ConfirmModal } from "@/shared/ui/modal/components/ConfirmModal";
 import { CustomButton } from "@/shared/ui/buttons/components/CustomButton";
 import { ListarDatos } from "@/shared/ui/listar-datos";
-import type { ValorGenerica } from "../types/genericas.types";
+import type { ValorGenerica, ValorGenericaDetail } from "../types/genericas.types";
 import { formatAppDate } from "@/shared/utils";
 import { Typography } from "@mui/material";
+import { Add } from "@mui/icons-material";
+import type { Action } from "@/shared/ui/table/components/TableRow";
+import { ValorGenericaDetailModal } from "./ValorGenericaList";
 
 interface GenericaModalListProps {
     genericaName: string;
@@ -11,6 +15,19 @@ interface GenericaModalListProps {
     onClose: () => void;
     valoresGenerica: ValorGenerica[];
     loadingValoresGenerica: boolean;
+    actionsValues: Action<ValorGenerica>[];
+    detailValorId: number | null;
+    onCloseDetailValor: () => void;
+    valorGenericaDetail: ValorGenericaDetail | null;
+    loadingValorGenericaDetail: boolean;
+    errorValorGenericaDetail: string | null;
+    deleteConfirmOpen: boolean;
+    deleteTargetNombre: string | null;
+    deleteLoading: boolean;
+    deleteError: string | null;
+    onCloseDeleteConfirm: () => void;
+    onConfirmDeleteValor: () => void | Promise<void>;
+    onCrearValor?: () => void;
 }
 
 export function GenericaModalList({
@@ -19,8 +36,35 @@ export function GenericaModalList({
     onClose,
     valoresGenerica,
     loadingValoresGenerica,
+    actionsValues,
+    detailValorId,
+    onCloseDetailValor,
+    valorGenericaDetail,
+    loadingValorGenericaDetail,
+    errorValorGenericaDetail,
+    deleteConfirmOpen,
+    deleteTargetNombre,
+    deleteLoading,
+    deleteError,
+    onCloseDeleteConfirm,
+    onConfirmDeleteValor,
+    onCrearValor,
 }: GenericaModalListProps) {
+    const nombreEtiqueta = deleteTargetNombre?.trim() || "este valor";
+    const deleteDescription = (
+        <>
+            ¿Estás seguro de eliminar «<strong>{nombreEtiqueta}</strong>»?
+            {deleteError ? (
+                <>
+                    <br />
+                    <span style={{ color: "#D32F2F", fontWeight: 600 }}>{deleteError}</span>
+                </>
+            ) : null}
+        </>
+    );
+
     return (
+        <>
         <CustomModal
             open={open}
             onClose={onClose}
@@ -32,6 +76,7 @@ export function GenericaModalList({
             contentLoading={loadingValoresGenerica}
             contentLoadingLabel="Cargando valores..."
             contentLoadingVariant="linear"
+            actionsSx={{ justifyContent: "center" }}
             contentSx={{
                 display: "flex",
                 flexDirection: "column",
@@ -42,21 +87,30 @@ export function GenericaModalList({
                 pb: 1.5,
             }}
             actions={
-                <CustomButton
-                    label="Cancelar"
-                    variant="outlined"
-                    onClick={onClose}
-                    sx={{
-                        borderColor: "divider",
-                        color: "text.secondary",
-                        fontWeight: 500,
-                        "&:hover": {
-                            borderColor: "primary.light",
-                            backgroundColor: "action.hover",
-                            color: "text.primary",
-                        },
-                    }}
-                />
+                <>
+                    <CustomButton
+                        label="Crear"
+                        variant="contained"
+                        color="primary"
+                        startIcon={<Add />}
+                        onClick={() => onCrearValor?.()}
+                    />
+                    <CustomButton
+                        label="Cancelar"
+                        variant="outlined"
+                        onClick={onClose}
+                        sx={{
+                            borderColor: "divider",
+                            color: "text.secondary",
+                            fontWeight: 500,
+                            "&:hover": {
+                                borderColor: "primary.light",
+                                backgroundColor: "action.hover",
+                                color: "text.primary",
+                            },
+                        }}
+                    />
+                </>
             }
         >
             <ListarDatos
@@ -79,11 +133,28 @@ export function GenericaModalList({
                     },
                     { key: "codigo", label: "Código" },
                 ]}
-                actions={[]}
+                actions={actionsValues}
                 enableSearch={true}
                 searchPlaceholder="Buscar valor"
                 searchKeys={["nombre", "codigo"]}
             />
         </CustomModal>
+        <ValorGenericaDetailModal
+            open={detailValorId != null}
+            onClose={onCloseDetailValor}
+            detail={valorGenericaDetail}
+            loading={loadingValorGenericaDetail}
+            error={errorValorGenericaDetail}
+        />
+        <ConfirmModal
+            open={deleteConfirmOpen}
+            onClose={onCloseDeleteConfirm}
+            onConfirm={onConfirmDeleteValor}
+            description={deleteDescription}
+            loading={deleteLoading}
+            loadingText="Eliminando..."
+            variant="danger"
+        />
+        </>
     );
 }

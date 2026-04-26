@@ -130,15 +130,20 @@ export function ListarDatosItem<T extends { id?: string | number }>({
 
         {actions != null && actions.length > 0 ? (
           <Box sx={listarDatosStyles.actionsBox}>
-            {actions.map((action, i) => (
-              <ActionIconButton
-                key={`${action.label}-${i}`}
-                label={action.label}
-                icon={action.icon}
-                colorHex={action.colorHex}
-                onClick={() => action.onClick(row)}
-              />
-            ))}
+            {actions.map((action, i) => {
+              const icon = action.iconForRow != null ? action.iconForRow(row) : action.icon;
+              const colorHex = action.colorHexForRow != null ? action.colorHexForRow(row) : action.colorHex;
+              const label = action.getLabel != null ? action.getLabel(row) : action.label;
+              return (
+                <ActionIconButton
+                  key={`${label}-${i}`}
+                  label={label}
+                  icon={icon}
+                  colorHex={colorHex}
+                  onClick={() => action.onClick(row)}
+                />
+              );
+            })}
           </Box>
         ) : null}
       </Box>

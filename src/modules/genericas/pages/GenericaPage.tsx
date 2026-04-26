@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { Box, Typography } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import {
@@ -8,6 +9,7 @@ import { Layout } from "@/shared/layout";
 import { Table } from "@/shared/ui/table";
 import { AppSkeleton } from "@/shared/ui/loading";
 import { useGenericas } from "../hooks/useGenericas";
+import { useValoresGenericas } from "../hooks/useValoresGenericas";
 import { GenericasHeader } from "../components/GenericasHeader";
 import { GenericasFilters } from "../components/GenericasFilters";
 import { GenericaModal } from "../components/GenericaModal";
@@ -15,6 +17,8 @@ import { getGenericaActions } from "../utils/genericaActions";
 import { formatAppDate } from "@/shared/utils";
 import type { Generica } from "../types/genericas.types";
 import { GenericaModalList } from "../components/GenericaModalList";
+import { AsignarRelacionModal } from "../components/AsignarRelacionModal";
+import { ValorGenericaModal } from "../components/ValorGenericaModal";
 
 export function GenericaPage() {
   // const totalGenericas = 128; // TODO: reemplazar con endpoint real
@@ -36,23 +40,59 @@ export function GenericaPage() {
     openModal,
     setOpenModal,
     openModalGenericaList,
-    setOpenModalGenericaList,
+    openValoresModal,
+    closeModalGenericaList,
     genericaName,
-    setGenericaName,
-    setIdGenerica,
     valoresGenerica,
     loadingValoresGenerica,
-    closeModalGenericaList,
+    refetchValoresGenerica,
+    idGenerica,
   } = useGenericas();
+
+  const {
+    actionsValues,
+    detailValorId,
+    closeDetailValor,
+    valorGenericaDetail,
+    loadingValorGenericaDetail,
+    errorValorGenericaDetail,
+    deleteConfirmOpen,
+    deleteTargetNombre,
+    deleteLoading,
+    deleteError,
+    closeDeleteValorConfirm,
+    confirmDeleteValor,
+    valorGenericaModalOpen,
+    valorGenericaModalMode,
+    valorGenericaModalInitial,
+    openValorGenericaModalCreate,
+    closeValorGenericaModal,
+    valorGenericaModalEditLoading,
+    asignarRelacionOpen,
+    closeAsignarRelacion,
+    genericaPickerOpen,
+    openGenericaPicker,
+    closeGenericaPicker,
+    parametroGenericaDisplay,
+    genericasParaPicker,
+    loadingGenericasPicker,
+    onSelectParametroGenerica,
+    valoresConPermiso,
+    loadingValoresConPermiso,
+    onActionPermisoSecundarioFila,
+  } = useValoresGenericas(openModalGenericaList, refetchValoresGenerica);
+
+  const handleCloseModalGenericaList = useCallback(() => {
+    closeValorGenericaModal();
+    closeModalGenericaList();
+  }, [closeModalGenericaList, closeValorGenericaModal]);
 
   const actions = getGenericaActions({
     onEdit: (row: Generica) => {
       handleModalEdit(row);
     },
     onView: (row: Generica) => {
-      setOpenModalGenericaList(true);
-      setGenericaName(row.nombre ?? "");
-      setIdGenerica(row.id ?? 0);
+      openValoresModal(row);
     },
   });
   const totalRegistros = Number(pagination?.total ?? genericas.length);
@@ -232,10 +272,51 @@ export function GenericaPage() {
 
       <GenericaModalList
         open={openModalGenericaList}
-        onClose={closeModalGenericaList}
+        onClose={handleCloseModalGenericaList}
         genericaName={genericaName ?? ""}
         valoresGenerica={valoresGenerica}
         loadingValoresGenerica={loadingValoresGenerica}
+        actionsValues={actionsValues}
+        detailValorId={detailValorId}
+        onCloseDetailValor={closeDetailValor}
+        valorGenericaDetail={valorGenericaDetail}
+        loadingValorGenericaDetail={loadingValorGenericaDetail}
+        errorValorGenericaDetail={errorValorGenericaDetail}
+        deleteConfirmOpen={deleteConfirmOpen}
+        deleteTargetNombre={deleteTargetNombre}
+        deleteLoading={deleteLoading}
+        deleteError={deleteError}
+        onCloseDeleteConfirm={closeDeleteValorConfirm}
+        onConfirmDeleteValor={confirmDeleteValor}
+        onCrearValor={openValorGenericaModalCreate}
+      />
+
+      {idGenerica != null && idGenerica > 0 ? (
+        <ValorGenericaModal
+          open={valorGenericaModalOpen}
+          onClose={closeValorGenericaModal}
+          mode={valorGenericaModalMode}
+          initialData={valorGenericaModalInitial}
+          editDetailLoading={valorGenericaModalEditLoading}
+          genericaId={idGenerica}
+          genericaName={genericaName ?? ""}
+          onCreated={refetchValoresGenerica}
+        />
+      ) : null}
+
+      <AsignarRelacionModal
+        open={asignarRelacionOpen}
+        onClose={closeAsignarRelacion}
+        parametroDisplay={parametroGenericaDisplay}
+        onOpenGenericaPicker={openGenericaPicker}
+        genericaPickerOpen={genericaPickerOpen}
+        onCloseGenericaPicker={closeGenericaPicker}
+        genericas={genericasParaPicker}
+        loadingGenericas={loadingGenericasPicker}
+        onSelectGenerica={onSelectParametroGenerica}
+        loadingValoresConPermiso={loadingValoresConPermiso}
+        valoresConPermiso={valoresConPermiso}
+        onActionPermisoSecundario={onActionPermisoSecundarioFila}
       />
     </Layout>
   );

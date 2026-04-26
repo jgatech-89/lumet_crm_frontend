@@ -17,11 +17,13 @@ export function useGenericas() {
   const [pagination, setPagination] = useState<ApiPagination | null>(null);
   const [page, setPage] = useState(1);
   const [refreshKey, setRefreshKey] = useState(0);
+
   const [openModalGenericaList, setOpenModalGenericaList] = useState(false);
   const [genericaName, setGenericaName] = useState<string | null>(null);
   const [idGenerica, setIdGenerica] = useState<number | null>(null);
   const [valoresGenerica, setValoresGenerica] = useState<ValorGenerica[]>([]);
   const [loadingValoresGenerica, setLoadingValoresGenerica] = useState(false);
+  const [valoresGenericaRefreshKey, setValoresGenericaRefreshKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -67,7 +69,15 @@ export function useGenericas() {
     return () => {
       cancelled = true;
     };
-  }, [openModalGenericaList, idGenerica]);
+  }, [openModalGenericaList, idGenerica, valoresGenericaRefreshKey]);
+
+  const refetchGenericas = useCallback(() => {
+    setRefreshKey((k) => k + 1);
+  }, []);
+
+  const refetchValoresGenerica = useCallback(() => {
+    setValoresGenericaRefreshKey((k) => k + 1);
+  }, []);
 
   const closeModalGenericaList = useCallback(() => {
     setOpenModalGenericaList(false);
@@ -77,8 +87,10 @@ export function useGenericas() {
     setLoadingValoresGenerica(false);
   }, []);
 
-  const refetchGenericas = useCallback(() => {
-    setRefreshKey((k) => k + 1);
+  const openValoresModal = useCallback((row: Generica) => {
+    setOpenModalGenericaList(true);
+    setGenericaName(row.nombre ?? "");
+    setIdGenerica(row.id ?? 0);
   }, []);
 
   const sortedGenericas = useMemo(() => {
@@ -98,7 +110,7 @@ export function useGenericas() {
       item.nombre?.toLowerCase().includes(normalizedQuery)
     );
   }, [sortedGenericas, searchQuery]);
-  
+
   const handleModalCreate = () => {
     setMode("create");
     setSelectedGenerica(null);
@@ -112,8 +124,6 @@ export function useGenericas() {
   };
 
   return {
-    openModalGenericaList,
-    setOpenModalGenericaList,
     genericas: filteredGenericas,
     searchQuery,
     setSearchQuery,
@@ -130,12 +140,13 @@ export function useGenericas() {
     selectedGenerica,
     openModal,
     setOpenModal,
+    openModalGenericaList,
+    openValoresModal,
+    closeModalGenericaList,
     genericaName,
-    setGenericaName,
-    idGenerica,
-    setIdGenerica,
     valoresGenerica,
     loadingValoresGenerica,
-    closeModalGenericaList,
+    refetchValoresGenerica,
+    idGenerica,
   };
 }

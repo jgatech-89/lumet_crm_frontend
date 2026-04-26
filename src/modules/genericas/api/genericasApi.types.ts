@@ -16,3 +16,9 @@ export type UpdateGenericaPayload = {
 export type ListValoresGenericaParams = {
     generica: number;
 };
+
+export type UpdateValorGenericaPayload = {
+  id: number;
+  fields: Record<string, string | number | null>;
+  archivo?: File | null;
+};
