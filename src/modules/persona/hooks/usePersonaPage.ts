@@ -1,15 +1,16 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getRequestErrorMessage } from "@/core/api/client";
 import { useSnackbar } from "@/shared/context/SnackbarContext";
 import { createPersonaRequest, deletePersonaRequest, listPersonasRequest, updatePersonaRequest } from "@/modules/persona/api/personaApi";
 import { PERSONA_ROWS_PER_PAGE } from "@/modules/persona/constants/personaSeedData";
 import type { PersonaFormValues, PersonaPayload, PersonaSummary } from "@/modules/persona/types/persona.types";
-import { parsePersonaSummaryToFormValues } from "@/modules/persona/utils/personaMappers";
+import { parsePersonaSummaryToFormValues, personaRolesFromSummary } from "@/modules/persona/utils/personaMappers";
 
 export function usePersonaPage() {
   const { showSuccess, showError } = useSnackbar();
   const [personas, setPersonas] = useState<PersonaSummary[]>([]);
   const [isListLoading, setIsListLoading] = useState(true);
+  const [isListRefreshing, setIsListRefreshing] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingPersona, setEditingPersona] = useState<PersonaFormValues | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -20,6 +21,8 @@ export function usePersonaPage() {
   const [filterEstado, setFilterEstado] = useState("todos");
   const [searchQuery, setSearchQuery] = useState("");
   const [tablePage, setTablePage] = useState(1);
+  const detailFetchGenerationRef = useRef(0);
+  const advanceDetailGeneration = useCallback(() => ++detailFetchGenerationRef.current, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -51,7 +54,7 @@ export function usePersonaPage() {
   const filteredPersonas = useMemo(
     () =>
       personas.filter((persona) => {
-        const currentRoles = persona.roles?.length ? persona.roles : persona.rol ? [persona.rol] : [];
+        const currentRoles = personaRolesFromSummary(persona);
         const matchesRol = filterRol === "todos" || currentRoles.some((rol) => rol.toLowerCase() === filterRol);
         const matchesEstado = filterEstado === "todos" || persona.estado.toLowerCase() === filterEstado;
         const normalizedSearch = searchQuery.trim().toLowerCase();
@@ -87,25 +90,43 @@ export function usePersonaPage() {
     setModalOpen(true);
   }, []);
 
-  const onOpenDetail = useCallback((persona: PersonaSummary) => {
-    setSelectedPersona(persona);
-    setDetailOpen(true);
-  }, []);
+  const onOpenDetail = useCallback(
+    (persona: PersonaSummary) => {
+      const generation = advanceDetailGeneration();
+      setDetailOpen(true);
+      setSelectedPersona(null);
+
+      void (async () => {
+        try {
+          const list = await listPersonasRequest();
+          if (detailFetchGenerationRef.current !== generation) return;
+          setSelectedPersona(list.find((p) => p.id === persona.id) ?? persona);
+        } catch (error) {
+          if (detailFetchGenerationRef.current !== generation) return;
+          showError(getRequestErrorMessage(error));
+          setSelectedPersona(persona);
+        }
+      })();
+    },
+    [showError, advanceDetailGeneration],
+  );
 
   const onCloseDetail = useCallback(() => {
+    advanceDetailGeneration();
     setDetailOpen(false);
-  }, []);
+  }, [advanceDetailGeneration]);
 
   const onDetailExited = useCallback(() => {
     setSelectedPersona(null);
   }, []);
 
   const onEditFromDetail = useCallback((persona: PersonaSummary) => {
+    advanceDetailGeneration();
     setDetailOpen(false);
     setSelectedPersona(persona);
     setEditingPersona(parsePersonaSummaryToFormValues(persona));
     setModalOpen(true);
-  }, []);
+  }, [advanceDetailGeneration]);
 
   const onAskDelete = useCallback((persona: PersonaSummary) => {
     setPersonaToDelete(persona);
@@ -153,30 +174,27 @@ export function usePersonaPage() {
 
   const onSavePersona = useCallback(
     async (payload: PersonaPayload) => {
+      const validationError = validatePersonaPayload(payload);
+      if (validationError) {
+        showError(validationError);
+        throw new Error(validationError);
+      }
+      setIsListRefreshing(true);
       try {
-        const validationError = validatePersonaPayload(payload);
-        if (validationError) {
-          showError(validationError);
-          throw new Error(validationError);
+        if (payload.id) {
+          await updatePersonaRequest(payload.id, payload);
+        } else {
+          await createPersonaRequest(payload);
         }
-        const saved = payload.id
-          ? await updatePersonaRequest(payload.id, payload)
-          : await createPersonaRequest(payload);
-        setPersonas((prev) => {
-          if (payload.id) {
-            return prev.map((p) => (p.id === saved.id ? saved : p));
-          }
-          return [...prev, saved];
-        });
-        // Rehidrata desde backend para reflejar inmediatamente cualquier cambio derivado (roles, normalizaciones).
-        const refreshed = await listPersonasRequest();
-        setPersonas(refreshed);
+        setPersonas(await listPersonasRequest());
         showSuccess(payload.id ? "Persona actualizada correctamente." : "Persona creada correctamente.");
         setModalOpen(false);
         setEditingPersona(null);
       } catch (error) {
         showError(getRequestErrorMessage(error));
         throw error;
+      } finally {
+        setIsListRefreshing(false);
       }
     },
     [showSuccess, showError, validatePersonaPayload],
@@ -185,6 +203,7 @@ export function usePersonaPage() {
   return {
     filteredPersonas,
     isListLoading,
+    isListRefreshing,
     modalOpen,
     editingPersona,
     detailOpen,

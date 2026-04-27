@@ -34,6 +34,7 @@ export function GenericaModal({ open, onClose, onCreated, mode, initialData }: G
       disableBackdropClose={saving}
       actionLoading={saving}
       actionLoadingLabel={mode === "create" ? "Guardando..." : "Actualizando..."}
+      actionsSx={{ bgcolor: "transparent", px: { xs: 1.75, sm: 2 }, pb: 1.5, mt: 0.25, pt: 0.5 }}
       actions={
         <>
           <CustomButton

@@ -274,7 +274,7 @@ export function AsignarRelacionModal({
             sx={MODAL_OUTLINED_SECONDARY_SX}
           />
         }
-        actionsSx={{ justifyContent: "flex-end" }}
+        actionsSx={{ bgcolor: "transparent", px: { xs: 1.75, sm: 2 }, pb: 1.5, mt: 0.25, pt: 0.5 }}
       >
         <Stack spacing={2.5} sx={{ width: 1, alignItems: "stretch", pt: 1.5 }}>
           <PickerFieldCard
@@ -366,7 +366,7 @@ export function AsignarRelacionModal({
             sx={MODAL_OUTLINED_SECONDARY_SX}
           />
         }
-        actionsSx={{ justifyContent: "center" }}
+        actionsSx={{ bgcolor: "transparent", px: { xs: 1.75, sm: 2 }, pb: 1.5, mt: 0.25, pt: 0.5 }}
         slotProps={{ paper: { sx: mainPaperSx } }}
       >
         <ListarDatos<Generica>

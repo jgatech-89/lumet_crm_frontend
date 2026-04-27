@@ -1,4 +1,5 @@
 import SearchIcon from "@mui/icons-material/Search";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import {
   Box,
   Divider,
@@ -69,11 +70,25 @@ export function ListarDatos<T extends { id?: string | number }>({
 
   const showToolbar = showSummary || enableSearch;
 
-  const emptyContent =
-    emptyState ??
-    (enableSearch && searchQuery.trim()
+  const defaultEmptyMessage =
+    enableSearch && searchQuery.trim()
       ? "No hay resultados para la búsqueda."
-      : "No hay datos para mostrar.");
+      : "No hay datos para mostrar.";
+
+  const renderedEmpty =
+    emptyState ?? (
+      <Stack alignItems="center" spacing={1.5} sx={{ py: 1, px: 1 }}>
+        <InfoOutlinedIcon sx={{ fontSize: 44, color: "text.secondary" }} aria-hidden />
+        <Typography
+          component="p"
+          variant="body2"
+          color="text.secondary"
+          sx={{ lineHeight: 1.55, maxWidth: 420, m: 0 }}
+        >
+          {defaultEmptyMessage}
+        </Typography>
+      </Stack>
+    );
 
   return (
     <Box
@@ -159,6 +174,8 @@ export function ListarDatos<T extends { id?: string | number }>({
                 maxHeight: "none",
                 overflowY: "auto" as const,
                 overflowX: "hidden" as const,
+                display: "flex",
+                flexDirection: "column" as const,
               }
             : { maxHeight: listMaxHeight }),
         }}
@@ -176,7 +193,7 @@ export function ListarDatos<T extends { id?: string | number }>({
             ))}
           </Stack>
         ) : filteredData.length === 0 ? (
-          <Box sx={listarDatosStyles.emptyBox}>{emptyContent}</Box>
+          <Box sx={listarDatosStyles.emptyBox}>{renderedEmpty}</Box>
         ) : (
           <Stack component="div" spacing={0}>
             {filteredData.map((row, index) => {

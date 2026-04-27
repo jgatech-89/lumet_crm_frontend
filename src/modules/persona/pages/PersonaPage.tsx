@@ -3,14 +3,13 @@ import {
   Typography,
   Box,
   Stack,
-  Paper,
 } from "@mui/material";
 import { PersonAdd as PersonAddIcon } from "@mui/icons-material";
 
 import { CustomButton } from "@/shared/ui/buttons/components/CustomButton";
 import { getButtonPreset } from "@/shared/ui/buttons/buttonPresets";
 import { ConfirmModal } from "@/shared/ui/modal/components/ConfirmModal";
-import { AppSkeleton, LinearLoader } from "@/shared/ui/loading";
+import { AppSkeleton } from "@/shared/ui/loading";
 import { Layout } from "@/shared/layout";
 
 import { PersonaDetailModal } from "@/modules/persona/components/PersonaDetailModal";
@@ -25,6 +24,7 @@ export function PersonaPage() {
   const {
     filteredPersonas,
     isListLoading,
+    isListRefreshing,
     modalOpen,
     editingPersona,
     detailOpen,
@@ -69,14 +69,14 @@ export function PersonaPage() {
           <Typography
             variant="h5"
             fontWeight={700}
-            color="#263238"
+            color="text.primary"
             gutterBottom
             sx={{ fontSize: { xs: "1.25rem", sm: "1.45rem" }, lineHeight: 1.2, mb: 0.5 }}
           >
             Gestión de Personas
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: "0.85rem", sm: "0.9rem" } }}>
-            administra tus supervisores y comerciales
+            Administra tus supervisores y comerciales
           </Typography>
           {searchQuery.trim() ? (
             <Typography variant="caption" color="text.secondary">
@@ -96,27 +96,29 @@ export function PersonaPage() {
         />
       </Stack>
 
-      <PersonaFilters
-        filterRol={filterRol}
-        filterEstado={filterEstado}
-        onChangeFilterRol={setFilterRol}
-        onChangeFilterEstado={setFilterEstado}
-      />
-
       {isListLoading ? (
-        <Paper elevation={0} sx={{ borderRadius: 2, bgcolor: "#ffffff", p: { xs: 1.5, sm: 2 } }}>
-          <LinearLoader label="Cargando personas..." sx={{ mb: 2 }} />
-          <AppSkeleton rows={8} showHeader />
-        </Paper>
+        <AppSkeleton variant="dashboard" tableRows={4} />
       ) : (
-        <PersonaTable
-          rows={filteredPersonas}
-          page={tablePage}
-          onPageChange={setTablePage}
-          onViewDetail={onOpenDetail}
-          onEdit={onOpenEdit}
-          onAskDelete={onAskDelete}
-        />
+        <>
+          <PersonaFilters
+            filterRol={filterRol}
+            filterEstado={filterEstado}
+            onChangeFilterRol={setFilterRol}
+            onChangeFilterEstado={setFilterEstado}
+          />
+          {isListRefreshing ? (
+            <AppSkeleton variant="dashboard" tableRows={4} />
+          ) : (
+            <PersonaTable
+              rows={filteredPersonas}
+              page={tablePage}
+              onPageChange={setTablePage}
+              onViewDetail={onOpenDetail}
+              onEdit={onOpenEdit}
+              onAskDelete={onAskDelete}
+            />
+          )}
+        </>
       )}
 
       <PersonaForm open={modalOpen} onClose={onCloseModal} onSave={onSavePersona} personaData={editingPersona} />

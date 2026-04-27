@@ -19,7 +19,12 @@ export const Sidebar = ({ compact = false }: SidebarProps) => {
   const { items, loading } = useSidebar();
 
   return (
-    <Box sx={(theme) => sidebarStyles.container(theme, compact)}>
+    <Box
+      sx={(theme) => ({
+        ...sidebarStyles.container(theme, compact),
+        pt: compact ? 4 : 4.5,
+      })}
+    >
       {loading ? (
         <Box sx={loadingPlaceholderSx}>
           <CircularProgress />

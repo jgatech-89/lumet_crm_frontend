@@ -4,10 +4,16 @@ import { CustomButton } from "@/shared/ui/buttons/components/CustomButton";
 import { ListarDatos } from "@/shared/ui/listar-datos";
 import type { ValorGenerica, ValorGenericaDetail } from "../types/genericas.types";
 import { formatAppDate } from "@/shared/utils";
-import { Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import type { Action } from "@/shared/ui/table/components/TableRow";
 import { ValorGenericaDetailModal } from "./ValorGenericaList";
+import { LinearLoader } from "@/shared/ui/loading";
+import { linearLoaderInModalNarrowSx } from "@/shared/ui/loading/styles/linearLoader.styles";
+import {
+    genericaModalListContentSx,
+    genericaModalListLoadingBodySx,
+} from "../styles/genericaModalList.styles";
 
 interface GenericaModalListProps {
     genericaName: string;
@@ -69,32 +75,14 @@ export function GenericaModalList({
             open={open}
             onClose={onClose}
             title={`¡ ${genericaName} !`}
-            maxWidth="lg"
+            maxWidth="md"
             disableBackdropClose={false}
             actionLoading={false}
             actionLoadingLabel=""
-            contentLoading={loadingValoresGenerica}
-            contentLoadingLabel="Cargando valores..."
-            contentLoadingVariant="linear"
-            actionsSx={{ justifyContent: "center" }}
-            contentSx={{
-                display: "flex",
-                flexDirection: "column",
-                minHeight: 0,
-                overflow: "hidden",
-                px: 0,
-                pt: 1,
-                pb: 1.5,
-            }}
+            actionsSx={{ bgcolor: "transparent", px: { xs: 1.75, sm: 2 }, pb: 1.5, mt: 0.25, pt: 0.5 }}
+            contentSx={genericaModalListContentSx}
             actions={
                 <>
-                    <CustomButton
-                        label="Crear"
-                        variant="contained"
-                        color="primary"
-                        startIcon={<Add />}
-                        onClick={() => onCrearValor?.()}
-                    />
                     <CustomButton
                         label="Cancelar"
                         variant="outlined"
@@ -110,34 +98,47 @@ export function GenericaModalList({
                             },
                         }}
                     />
+                    <CustomButton
+                        label="Crear"
+                        variant="contained"
+                        color="primary"
+                        startIcon={<Add />}
+                        onClick={() => onCrearValor?.()}
+                    />
                 </>
             }
         >
-            <ListarDatos
-                data={valoresGenerica}
-                fillParentHeight
-                variant="embedded"
-                sx={{ flex: 1, minHeight: 0, my: 0 }}
-                summaryTitle="Listado de valores genéricas"
-                primary={{ key: ["id", "nombre"] }}
-                loading={false}
-                fields={[
-                    {
-                        key: "created_at",
-                        label: "Fecha de creación",
-                        render: (value) => (
-                            <Typography variant="body2" sx={{ color: "text.secondary", fontSize: "0.8rem" }}>
-                                {formatAppDate(value as string | null | undefined, { mode: "datetime" })}
-                            </Typography>
-                        )
-                    },
-                    { key: "codigo", label: "Código" },
-                ]}
-                actions={actionsValues}
-                enableSearch={true}
-                searchPlaceholder="Buscar valor"
-                searchKeys={["nombre", "codigo"]}
-            />
+            {loadingValoresGenerica ? (
+                <Box sx={genericaModalListLoadingBodySx}>
+                    <LinearLoader label="Cargando valores..." sx={linearLoaderInModalNarrowSx} />
+                </Box>
+            ) : (
+                <ListarDatos
+                    data={valoresGenerica}
+                    fillParentHeight
+                    variant="embedded"
+                    sx={{ flex: 1, minHeight: 0, my: 0 }}
+                    summaryTitle="Listado de valores genéricas"
+                    primary={{ key: ["id", "nombre"] }}
+                    loading={false}
+                    fields={[
+                        {
+                            key: "created_at",
+                            label: "Fecha de creación",
+                            render: (value) => (
+                                <Typography variant="body2" sx={{ color: "text.secondary", fontSize: "0.8rem" }}>
+                                    {formatAppDate(value as string | null | undefined, { mode: "datetime" })}
+                                </Typography>
+                            ),
+                        },
+                        { key: "codigo", label: "Código" },
+                    ]}
+                    actions={actionsValues}
+                    enableSearch={true}
+                    searchPlaceholder="Buscar valor"
+                    searchKeys={["nombre", "codigo"]}
+                />
+            )}
         </CustomModal>
         <ValorGenericaDetailModal
             open={detailValorId != null}

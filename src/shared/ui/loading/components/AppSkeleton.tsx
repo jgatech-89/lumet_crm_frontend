@@ -1,5 +1,5 @@
 import { Box, Skeleton, Stack } from '@mui/material';
-import { skeletonRowSx } from '../styles/loading.styles';
+import { skeletonRowSx, skeletonToneSx } from '../styles/loading.styles';
 import type { AppSkeletonProps } from '../types/AppSkeleton.types';
 
 export function AppSkeleton({
@@ -18,6 +18,7 @@ export function AppSkeleton({
           minHeight: fullPage ? '100vh' : 'auto',
           p: fullPage ? { xs: 2, sm: 3 } : 0,
           bgcolor: fullPage ? 'background.default' : 'transparent',
+          ...skeletonToneSx,
         }}
       >
         {fullPage ? <Skeleton variant="rounded" width={260} height={44} /> : null}
@@ -108,7 +109,7 @@ export function AppSkeleton({
   }
 
   return (
-    <Stack spacing={2} sx={{ width: '100%' }}>
+    <Stack spacing={2} sx={{ width: '100%', ...skeletonToneSx }}>
       {showHeader && (
         <Stack direction="row" spacing={1.5} alignItems="center">
           {showAvatar ? <Skeleton variant="circular" width={40} height={40} /> : null}

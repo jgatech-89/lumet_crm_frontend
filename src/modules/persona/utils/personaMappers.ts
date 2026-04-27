@@ -16,6 +16,14 @@ const NOMBRE_PERFIL_A_ROL: Record<string, RolPersona> = {
   Cerrador: "Cerrador",
 };
 
+const CODIGO_PERFIL_A_ROL: Record<string, RolPersona> = {
+  admin: "Administrador",
+  usuario: "Usuario",
+  supervisor: "Supervisor",
+  comercial: "Comercial",
+  cerrador: "Cerrador",
+};
+
 const ROL_A_PERFIL_CODIGO: Record<RolPersona, string> = {
   Administrador: "admin",
   Usuario: "usuario",
@@ -23,6 +31,17 @@ const ROL_A_PERFIL_CODIGO: Record<RolPersona, string> = {
   Comercial: "comercial",
   Cerrador: "cerrador",
 };
+
+function mapPerfilToRol(perfil: { nombre: string; codigo: string | null }): RolPersona | null {
+  if (perfil.codigo) {
+    const roleByCode = CODIGO_PERFIL_A_ROL[perfil.codigo.toLowerCase()];
+    if (roleByCode) {
+      return roleByCode;
+    }
+  }
+
+  return NOMBRE_PERFIL_A_ROL[perfil.nombre] ?? null;
+}
 
 function estadoApiToUi(estado: string): EstadoPersona {
   return estado === "1" ? "Activo" : "Inactivo";
@@ -32,7 +51,6 @@ function estadoUiToApi(estado: EstadoPersona): string {
   return estado === "Activo" ? "1" : "0";
 }
 
-/** PAS (backend) se muestra como PA en UI. */
 export function tipoIdentificacionCodigoToUi(codigo: string | null): TipoIdentificacion {
   if (!codigo) return "CC";
   const u = codigo.toUpperCase();
@@ -49,8 +67,8 @@ function tipoUiToCodigoParaApi(tipo: TipoIdentificacion): string {
 export function mapPersonaApiToSummary(dto: PersonaApiDto): PersonaSummary {
   const tipoUi = tipoIdentificacionCodigoToUi(dto.tipo_identificacion.codigo);
   const roles = (dto.roles ?? [])
-    .map((r) => NOMBRE_PERFIL_A_ROL[r.nombre])
-    .filter((r): r is RolPersona => Boolean(r));
+    .map((perfil) => mapPerfilToRol(perfil))
+    .filter((role): role is RolPersona => role !== null);
   const rolesFinal: RolPersona[] = roles.length ? roles : ["Comercial"];
   const rolPrincipal = rolesFinal[0];
   const idDocumento = `${tipoUi}: ${dto.identificacion}`;
@@ -71,8 +89,8 @@ export function mapPersonaApiToSummary(dto: PersonaApiDto): PersonaSummary {
 export function mapApiDtoToFormValues(dto: PersonaApiDto): PersonaFormValues {
   const tipoUi = tipoIdentificacionCodigoToUi(dto.tipo_identificacion.codigo);
   const roles = (dto.roles ?? [])
-    .map((r) => NOMBRE_PERFIL_A_ROL[r.nombre])
-    .filter((r): r is RolPersona => Boolean(r));
+    .map((perfil) => mapPerfilToRol(perfil))
+    .filter((role): role is RolPersona => role !== null);
   const rolesFinal: RolPersona[] = roles.length ? roles : ["Comercial"];
 
   return {
@@ -123,7 +141,6 @@ export function parsePersonaSummaryToFormValues(persona: PersonaSummary): Person
   };
 }
 
-/** Cuerpo JSON para POST/PATCH /personas/ (snake_case + códigos de genéricas). */
 export function buildPersonaWriteBody(payload: PersonaPayload): Record<string, unknown> {
   const roles: RolPersona[] = payload.roles.length ? payload.roles : ["Comercial"];
   return {
@@ -162,6 +179,12 @@ export function buildPersonaSummaryFromPayload(
     telefono: payload.telefono,
     estado: payload.estado,
   };
+}
+
+export function personaRolesFromSummary(persona: Pick<PersonaSummary, "roles" | "rol">): RolPersona[] {
+  if (persona.roles?.length) return persona.roles;
+  if (persona.rol) return [persona.rol];
+  return [];
 }
 
 export function getPersonaDisplayInitials(name: string): string {

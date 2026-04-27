@@ -66,7 +66,7 @@ export function ValorGenericaModal({
             ? "Completa los campos que necesites."
             : "Completa los campos que necesites para actualizar el valor."
       }
-      maxWidth="md"
+      maxWidth="xs"
       fullWidth
       disableBackdropClose={saving}
       actionLoading={saving}
@@ -75,10 +75,11 @@ export function ValorGenericaModal({
       contentLoadingVariant="linear"
       contentLoadingLabel="Cargando valor..."
       contentSx={{
-        px: { xs: 0.5, sm: 1 },
-        pt: { xs: 1.25, sm: 1.75 },
-        pb: 0.5,
+        px: { xs: 0.35, sm: 0.5 },
+        pt: { xs: 0.75, sm: 1 },
+        pb: 0,
       }}
+      actionsSx={{ bgcolor: "transparent", px: { xs: 1.25, sm: 1.5 }, pb: 1.1, mt: 0.15, pt: 0.35 }}
       actions={
         <>
           <CustomButton

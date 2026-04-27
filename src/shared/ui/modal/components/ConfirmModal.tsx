@@ -1,5 +1,6 @@
 import { Button, Typography, Stack, Box } from '@mui/material';
 import { WarningAmber as WarningIcon, Info as InfoIcon } from '@mui/icons-material';
+import { alpha, useTheme } from '@mui/material/styles';
 import { CustomModal } from './CustomModal';
 import { ConfirmModalProps } from '../types/ConfirmModal.types';
 
@@ -8,9 +9,9 @@ const getIconByVariant = (variant: 'default' | 'danger') => {
 
   switch (variant) {
     case 'danger':
-      return <WarningIcon sx={{ ...styles, color: '#D32F2F' }} />;
+      return <WarningIcon sx={{ ...styles, color: 'error.main' }} />;
     default:
-      return <InfoIcon sx={{ ...styles, color: '#1E88E5' }} />;
+      return <InfoIcon sx={{ ...styles, color: 'primary.main' }} />;
   }
 };
 
@@ -27,12 +28,15 @@ export const ConfirmModal = ({
   variant = 'default',
   disableBackdropClose = true,
 }: ConfirmModalProps) => {
+  const theme = useTheme();
+
   const handleConfirm = async () => {
     if (loading) return;
     await onConfirm();
   };
 
-  const buttonColor = variant === 'danger' ? '#D32F2F' : '#1E88E5';
+  const buttonColor = variant === 'danger' ? theme.palette.error.main : theme.palette.primary.main;
+  const titleColor = variant === 'danger' ? "error.main" : "text.primary";
 
   return (
     <CustomModal
@@ -44,7 +48,7 @@ export const ConfirmModal = ({
       showCloseButton={false}
       disableBackdropClose={disableBackdropClose}
       maxWidth="xs"
-      bottomBorderColor={variant === 'danger' ? '#D32F2F' : '#1E88E5'}
+      bottomBorderColor={buttonColor}
       contentSx={{ textAlign: 'center', pb: 0.25, px: { xs: 2, sm: 2.5 } }}
       actionsSx={{
         flexDirection: 'column',
@@ -65,18 +69,18 @@ export const ConfirmModal = ({
             disabled={loading}
             sx={{
               bgcolor: buttonColor,
-              color: '#FFFFFF',
+              color: 'common.white',
               fontWeight: 600,
               fontSize: '0.94rem',
               py: 1.3,
               borderRadius: '9px',
               textTransform: 'none',
               '&:hover': {
-                bgcolor: variant === 'danger' ? '#B71C1C' : '#1565C0',
+                bgcolor: variant === 'danger' ? 'error.dark' : 'primary.dark',
               },
               '&:disabled': {
-                bgcolor: '#BDBDBD',
-                color: '#FFFFFF',
+                bgcolor: 'action.disabledBackground',
+                color: 'text.disabled',
               },
             }}
           >
@@ -88,7 +92,7 @@ export const ConfirmModal = ({
             onClick={onClose}
             disabled={loading}
             sx={{
-              color: '#555',
+              color: 'text.secondary',
               fontWeight: 500,
               fontSize: '0.9rem',
               py: 0.9,
@@ -96,10 +100,10 @@ export const ConfirmModal = ({
               textTransform: 'none',
               bgcolor: 'transparent',
               '&:hover': {
-                bgcolor: '#F5F5F5',
+                bgcolor: 'action.hover',
               },
               '&:disabled': {
-                color: '#BDBDBD',
+                color: 'text.disabled',
               },
             }}
           >
@@ -117,7 +121,10 @@ export const ConfirmModal = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            bgcolor: variant === 'danger' ? '#FDECEA' : '#E3F2FD',
+            bgcolor:
+              variant === 'danger'
+                ? alpha(theme.palette.error.main, theme.palette.mode === "dark" ? 0.2 : 0.12)
+                : alpha(theme.palette.primary.main, theme.palette.mode === "dark" ? 0.2 : 0.12),
           }}
         >
           {getIconByVariant(variant)}
@@ -128,7 +135,7 @@ export const ConfirmModal = ({
           sx={{
             fontWeight: 600,
             fontSize: '1.16rem',
-            color: '#1C1C1C',
+            color: titleColor,
             textAlign: 'center',
             lineHeight: 1.25,
           }}
@@ -139,7 +146,7 @@ export const ConfirmModal = ({
         <Typography
           variant="body2"
           sx={{
-            color: '#6B7280',
+            color: 'text.secondary',
             fontSize: '0.88rem',
             lineHeight: 1.5,
             textAlign: 'center',

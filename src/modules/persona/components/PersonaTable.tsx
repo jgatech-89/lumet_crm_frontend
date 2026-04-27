@@ -1,4 +1,5 @@
-import { Avatar, Box, Paper, Stack, Typography } from "@mui/material";
+import { Avatar, Box, Stack, Typography } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import {
   DeleteOutline as DeleteIcon,
   EditOutlined as EditIcon,
@@ -9,9 +10,9 @@ import type { ApiPagination } from "@/core/api/types";
 import { Table } from "@/shared/ui/table";
 import type { Action, Column } from "@/shared/ui/table";
 import { PERSONA_ROWS_PER_PAGE } from "@/modules/persona/constants/personaSeedData";
-import { personaAvatarRoleStyles, personaRolBadgeStyles } from "@/modules/persona/styles/personaPageStyles";
+import { getPersonaRoleChipSx, getPersonaRoleTone } from "@/modules/persona/styles/personaPageStyles";
 import type { PersonaSummary } from "@/modules/persona/types/persona.types";
-import { getPersonaDisplayInitials } from "@/modules/persona/utils/personaMappers";
+import { getPersonaDisplayInitials, personaRolesFromSummary } from "@/modules/persona/utils/personaMappers";
 
 interface PersonaTableProps {
   rows: PersonaSummary[];
@@ -57,13 +58,13 @@ export function PersonaTable({
         label: "PERSONA",
         render: (persona) => {
           const mainRole = persona.rolPrincipal ?? persona.roles?.[0] ?? persona.rol ?? "Comercial";
-          const avatar = personaAvatarRoleStyles[mainRole];
+          const roleTone = getPersonaRoleTone(mainRole);
           return (
             <Stack direction="row" spacing={2} alignItems="center">
               <Avatar
                 sx={{
-                  bgcolor: avatar.bg,
-                  color: avatar.color,
+                  bgcolor: (theme) => alpha(theme.palette[roleTone].main, theme.palette.mode === "dark" ? 0.22 : 0.12),
+                  color: `${roleTone}.main`,
                   fontWeight: 600,
                   fontSize: "1rem",
                   width: 44,
@@ -73,7 +74,7 @@ export function PersonaTable({
                 {getPersonaDisplayInitials(persona.nombre)}
               </Avatar>
               <Box>
-                <Typography variant="subtitle1" fontWeight={600} color="text.primary">
+                <Typography variant="body2" fontWeight={600} color="text.primary" sx={{ fontSize: "0.82rem", lineHeight: 1.35 }}>
                   {persona.nombre}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" fontSize="0.85rem">
@@ -89,24 +90,16 @@ export function PersonaTable({
         label: "ROL",
         render: (persona) => {
           const mainRole = persona.rolPrincipal ?? persona.roles?.[0] ?? persona.rol ?? "Comercial";
-          const chip = personaRolBadgeStyles[mainRole];
-          const rolesText = (persona.roles?.length ? persona.roles : persona.rol ? [persona.rol] : [mainRole]).join(" • ");
+          const list = personaRolesFromSummary(persona);
+          const rolesToShow = list.length ? list : [mainRole];
           return (
-            <Box
-              component="span"
-              sx={{
-                bgcolor: chip.bg,
-                color: chip.color,
-                fontWeight: 600,
-                fontSize: "0.8rem",
-                px: 2,
-                py: 0.5,
-                borderRadius: 5,
-                display: "inline-block",
-              }}
-            >
-              {rolesText}
-            </Box>
+            <Stack direction="row" flexWrap="wrap" useFlexGap gap={0.5} alignItems="center">
+              {rolesToShow.map((role, index) => (
+                <Box key={`${persona.id}-${role}-${index}`} component="span" sx={getPersonaRoleChipSx(role)}>
+                  {role}
+                </Box>
+              ))}
+            </Stack>
           );
         },
       },
@@ -136,10 +129,10 @@ export function PersonaTable({
                   width: 8,
                   height: 8,
                   borderRadius: "50%",
-                  bgcolor: isActivo ? "#00ACC1" : "#9E9E9E",
+                  bgcolor: isActivo ? "success.main" : "text.disabled",
                 }}
               />
-              <Typography variant="body2" fontWeight={500} sx={{ color: isActivo ? "#00ACC1" : "#757575" }}>
+              <Typography variant="body2" fontWeight={500} sx={{ color: isActivo ? "success.main" : "text.secondary" }}>
                 {persona.estado}
               </Typography>
             </Stack>
@@ -173,15 +166,13 @@ export function PersonaTable({
   );
 
   return (
-    <Paper elevation={0} sx={{ borderRadius: 2, bgcolor: "#ffffff", overflow: "hidden" }}>
-      <Table
-        data={pagedRows}
-        columns={columns}
-        actions={actions}
-        pagination={pagination}
-        onPageChange={onPageChange}
-        actionsColumnLabel="ACCIONES"
-      />
-    </Paper>
+    <Table
+      data={pagedRows}
+      columns={columns}
+      actions={actions}
+      pagination={pagination}
+      onPageChange={onPageChange}
+      actionsColumnLabel="ACCIONES"
+    />
   );
 }

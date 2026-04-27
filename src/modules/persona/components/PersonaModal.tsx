@@ -8,7 +8,7 @@ import {
   DescriptionOutlined,
   SettingsOutlined,
 } from '@mui/icons-material';
-import { styled } from '@mui/material/styles';
+import { alpha, styled } from '@mui/material/styles';
 import { useEffect, type ReactNode } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import PhoneInput from 'react-phone-input-2';
@@ -17,34 +17,34 @@ import 'react-phone-input-2/lib/style.css';
 import { CustomButton } from '@/shared/ui/buttons/components/CustomButton';
 import { getButtonPreset } from '@/shared/ui/buttons/buttonPresets';
 import { CustomModal } from '@/shared/ui/modal/components/CustomModal';
+import { getPersonaRoleTone } from '@/modules/persona/styles/personaPageStyles';
 import type { PersonaFormValues, PersonaPayload, RolPersona } from '@/modules/persona/types/persona.types';
+import { getPersonaDisplayInitials } from '@/modules/persona/utils/personaMappers';
 
-// 2. Títulos de sección azules con punto (ej: • INFORMACIÓN PERSONAL)
 const SectionHeader = ({ title, icon }: { title: string; icon?: ReactNode }) => (
-  <Box display="flex" alignItems="center" mt={{ xs: 0.75, sm: 0.5 }} mb={{ xs: 1, sm: 1 }} sx={{ color: '#1E88E5' /* Azul exacto */ }}>
+  <Box display="flex" alignItems="center" mt={{ xs: 0.75, sm: 0.5 }} mb={{ xs: 1, sm: 1 }} sx={{ color: 'primary.main' }}>
     <Box sx={{ mr: 1.2, flexShrink: 0, display: 'flex', alignItems: 'center' }}>
       {icon ?? <Box sx={{ width: 6, height: 6, bgcolor: 'currentColor', borderRadius: '50%' }} />}
     </Box>
     <Typography variant="overline" sx={{ fontWeight: 600, fontSize: '0.72rem', letterSpacing: '0.06em', textTransform: 'uppercase', opacity: 0.95 }}>
       {title}
     </Typography>
-    <Box sx={{ flex: 1, borderBottom: '1px solid #EEF1F4', ml: 2 }} />
+    <Box sx={{ flex: 1, borderBottom: '1px solid', borderColor: 'divider', ml: 2 }} />
   </Box>
 );
 
-// 3. Inputs personalizados (Custom TextField)
-const CustomInput = styled(TextField)({
+const CustomInput = styled(TextField)(({ theme }) => ({
   '& .MuiOutlinedInput-root': {
-    backgroundColor: '#FCFCFD', 
+    backgroundColor: theme.palette.background.default,
     borderRadius: '8px',
     '& fieldset': {
-      borderColor: '#EFEFEF', 
+      borderColor: theme.palette.divider,
     },
     '&:hover fieldset': {
-      borderColor: '#1E88E5', 
+      borderColor: theme.palette.primary.main,
     },
     '&.Mui-focused fieldset': {
-      borderColor: '#1E88E5', 
+      borderColor: theme.palette.primary.main,
     },
   },
   '& .MuiInputBase-input': {
@@ -72,7 +72,7 @@ const CustomInput = styled(TextField)({
   },
   '& .MuiInputLabel-root': {
     fontWeight: 500,
-    color: '#455A64',
+    color: theme.palette.text.secondary,
     fontSize: '0.82rem',
     transform: 'translate(0px, -20px) scale(1)',
   },
@@ -81,42 +81,14 @@ const CustomInput = styled(TextField)({
     fontSize: '0.74rem',
     lineHeight: 1.25,
   },
-});
+}));
 
-const avatarRoleStyles: Record<RolPersona, { bg: string; color: string }> = {
-  Administrador: { bg: '#ECEFF1', color: '#455A64' },
-  Usuario: { bg: '#F3E5F5', color: '#6A1B9A' },
-  Supervisor: { bg: '#E3F2FD', color: '#1E88E5' },
-  Comercial: { bg: '#E8F5E9', color: '#2E7D32' },
-  Cerrador: { bg: '#FFF3E0', color: '#EF6C00' },
-};
-
-const buildAvatarInitials = (values: Pick<PersonaFormValues, 'primerNombre' | 'segundoNombre' | 'primerApellido' | 'segundoApellido'>) => {
-  const words = [
-    values.primerNombre,
-    values.segundoNombre,
-    values.primerApellido,
-    values.segundoApellido,
-  ]
-    .join(' ')
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean);
-
-  if (words.length >= 2) {
-    return `${words[0][0]}${words[1][0]}`.toUpperCase();
-  }
-
-  const first = words[0] ?? '';
-  if (first.length >= 2) {
-    return first.slice(0, 2).toUpperCase();
-  }
-
-  if (first.length === 1) {
-    return `${first}${first}`.toUpperCase();
-  }
-
-  return 'NN';
+const avatarRoleStyles: Record<RolPersona, { tone: "primary" | "secondary" | "info" | "success" | "warning" }> = {
+  Administrador: { tone: getPersonaRoleTone("Administrador") },
+  Usuario: { tone: getPersonaRoleTone("Usuario") },
+  Supervisor: { tone: getPersonaRoleTone("Supervisor") },
+  Comercial: { tone: getPersonaRoleTone("Comercial") },
+  Cerrador: { tone: getPersonaRoleTone("Cerrador") },
 };
 
 interface Props {
@@ -159,12 +131,9 @@ export const PersonaModal = ({ open, onClose, onSave, personaData }: Props) => {
   const segundoApellidoValue = watch('segundoApellido');
   const rolesValue = watch('roles');
 
-  const avatarInitials = buildAvatarInitials({
-    primerNombre: primerNombreValue,
-    segundoNombre: segundoNombreValue,
-    primerApellido: primerApellidoValue,
-    segundoApellido: segundoApellidoValue,
-  });
+  const avatarInitials = getPersonaDisplayInitials(
+    [primerNombreValue, segundoNombreValue, primerApellidoValue, segundoApellidoValue].join(' '),
+  );
   const avatarStyle = avatarRoleStyles[rolesValue?.[0] ?? 'Administrador'] ?? avatarRoleStyles.Administrador;
 
   useEffect(() => {
@@ -215,23 +184,32 @@ export const PersonaModal = ({ open, onClose, onSave, personaData }: Props) => {
       onClose={handleClose}
       maxWidth="sm"
       title={(
-        <Typography sx={{ fontSize: '1.06rem', fontWeight: 600, color: '#22323D', lineHeight: 1.2 }}>
+        <Typography sx={{ fontSize: '1.06rem', fontWeight: 600, color: 'text.primary', lineHeight: 1.2 }}>
           {isEdit ? 'Editar Información de Persona' : 'Registrar Nueva Persona'}
         </Typography>
       )}
       subtitle={isEdit
         ? (
-          <Typography sx={{ fontSize: '0.82rem', fontWeight: 400, color: '#6B7280', lineHeight: 1.35 }}>
+          <Typography sx={{ fontSize: '0.82rem', fontWeight: 400, color: 'text.secondary', lineHeight: 1.35 }}>
             {`Editando perfil de ${watch('primerNombre')} ${watch('primerApellido')}`}
           </Typography>
         )
         : (
-          <Typography sx={{ fontSize: '0.82rem', fontWeight: 400, color: '#6B7280', lineHeight: 1.35 }}>
+          <Typography sx={{ fontSize: '0.82rem', fontWeight: 400, color: 'text.secondary', lineHeight: 1.35 }}>
             Complete la información para dar de alta un nuevo integrante.
           </Typography>
         )}
       headerIcon={isEdit ? (
-        <Avatar sx={{ width: 34, height: 34, bgcolor: avatarStyle.bg, color: avatarStyle.color, fontSize: '0.82rem', fontWeight: 600 }}>
+        <Avatar
+          sx={(theme) => ({
+            width: 34,
+            height: 34,
+            bgcolor: alpha(theme.palette[avatarStyle.tone].main, theme.palette.mode === "dark" ? 0.24 : 0.12),
+            color: `${avatarStyle.tone}.main`,
+            fontSize: '0.82rem',
+            fontWeight: 600,
+          })}
+        >
           {avatarInitials}
         </Avatar>
       ) : undefined}
@@ -245,13 +223,14 @@ export const PersonaModal = ({ open, onClose, onSave, personaData }: Props) => {
             label="Cancelar"
             type="button"
             onClick={handleClose}
+            disabled={isSubmitting}
             {...getButtonPreset('cancel')}
           />
           <CustomButton
             label={isEdit ? 'Guardar Cambios' : 'Guardar persona'}
             type="submit"
             form="persona-form"
-            loading={isSubmitting}
+            disabled={isSubmitting}
             startIcon={isEdit ? <SaveOutlined /> : undefined}
             {...getButtonPreset('save')}
           />
@@ -260,10 +239,8 @@ export const PersonaModal = ({ open, onClose, onSave, personaData }: Props) => {
     >
       <Box id="persona-form" component="form" onSubmit={handleSubmit(onSubmit)} noValidate sx={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
         <Grid container spacing={{ xs: 3, sm: 2 }} sx={{ mt: { xs: 0.5, sm: 0.25 } }}>
-          
-          {/* --- INFORMACIÓN PERSONAL --- */}
           <Grid size={{ xs: 12 }}><SectionHeader title="INFORMACIÓN PERSONAL" icon={<PersonOutline sx={{ fontSize: '0.82rem' }} />} /></Grid>
-          
+
           <Grid size={{ xs: 12, sm: 6 }}>
             <Controller
               name="primerNombre"
@@ -452,7 +429,7 @@ export const PersonaModal = ({ open, onClose, onSave, personaData }: Props) => {
                       transform: 'translate(0px, -20px) scale(1)',
                       transformOrigin: 'top left',
                       fontWeight: 500,
-                      color: '#455A64',
+                      color: 'text.secondary',
                       fontSize: '0.82rem',
                       pointerEvents: 'none',
                     }}
@@ -467,8 +444,8 @@ export const PersonaModal = ({ open, onClose, onSave, personaData }: Props) => {
                       width: '100%',
                       height: '40px',
                       borderRadius: '8px',
-                      border: `1px solid ${errors.telefono ? '#d32f2f' : '#EFEFEF'}`,
-                      backgroundColor: '#FCFCFD',
+                      border: `1px solid ${errors.telefono ? 'var(--mui-palette-error-main)' : 'var(--mui-palette-divider)'}`,
+                      backgroundColor: 'var(--mui-palette-background-default)',
                       fontSize: '0.9rem',
                       fontWeight: 400,
                       paddingLeft: '52px',
@@ -477,8 +454,8 @@ export const PersonaModal = ({ open, onClose, onSave, personaData }: Props) => {
                       height: '40px',
                       borderTopLeftRadius: '8px',
                       borderBottomLeftRadius: '8px',
-                      border: `1px solid ${errors.telefono ? '#d32f2f' : '#EFEFEF'}`,
-                      backgroundColor: '#FCFCFD',
+                      border: `1px solid ${errors.telefono ? 'var(--mui-palette-error-main)' : 'var(--mui-palette-divider)'}`,
+                      backgroundColor: 'var(--mui-palette-background-default)',
                     }}
                     dropdownStyle={{ zIndex: 1600 }}
                     enableSearch

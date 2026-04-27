@@ -1,19 +1,37 @@
+import type { SxProps, Theme } from "@mui/material/styles";
+import { alpha } from "@mui/material/styles";
 import type { RolPersona } from "@/modules/persona/types/persona.types";
 
-export const personaRolBadgeStyles: Record<RolPersona, { bg: string; color: string }> = {
-  Administrador: { bg: "#ECEFF1", color: "#455A64" },
-  Usuario: { bg: "#F3E5F5", color: "#6A1B9A" },
-  Supervisor: { bg: "#E3F2FD", color: "#1E88E5" },
-  Comercial: { bg: "#E0F2F1", color: "#00897B" },
-  Cerrador: { bg: "#FFF8E1", color: "#FBC02D" },
+type RoleTone = "primary" | "secondary" | "info" | "success" | "warning";
+
+const personaRoleToneMap: Record<RolPersona, RoleTone> = {
+  Administrador: "secondary",
+  Usuario: "secondary",
+  Supervisor: "info",
+  Comercial: "success",
+  Cerrador: "warning",
 };
 
-export const personaAvatarRoleStyles: Record<RolPersona, { bg: string; color: string }> = {
-  Administrador: { bg: "#ECEFF1", color: "#455A64" },
-  Usuario: { bg: "#F3E5F5", color: "#6A1B9A" },
-  Supervisor: { bg: "#E3F2FD", color: "#1E88E5" },
-  Comercial: { bg: "#E8F5E9", color: "#2E7D32" },
-  Cerrador: { bg: "#FFF3E0", color: "#EF6C00" },
+export const getPersonaRoleTone = (role: RolPersona): RoleTone =>
+  personaRoleToneMap[role] ?? "primary";
+
+export const getPersonaRoleChipSx = (role: RolPersona): SxProps<Theme> => (theme) => {
+  const tone = getPersonaRoleTone(role);
+  return {
+    display: "inline-flex",
+    alignItems: "center",
+    bgcolor: alpha(theme.palette[tone].main, theme.palette.mode === "dark" ? 0.24 : 0.14),
+    color: `${tone}.main`,
+    fontWeight: 700,
+    fontSize: "0.64rem",
+    letterSpacing: "0.06em",
+    textTransform: "uppercase",
+    px: 0.85,
+    py: 0.25,
+    borderRadius: 999,
+    lineHeight: 1.15,
+    whiteSpace: "nowrap",
+  };
 };
 
 export const personaPageContainerSx = {
@@ -31,9 +49,10 @@ export const personaFilterLabelSx = {
 export const personaFilterSelectSx = {
   width: "100%",
   minWidth: { xs: "100%", sm: 180 },
-  border: "1px solid #E0E0E0",
+  border: "1px solid",
+  borderColor: "divider",
   borderRadius: "10px",
-  backgroundColor: "#FFFFFF",
+  backgroundColor: "background.paper",
   fontSize: "0.9rem",
   color: "text.primary",
   "& .MuiSelect-select": {
@@ -43,11 +62,15 @@ export const personaFilterSelectSx = {
     alignItems: "center",
   },
   "&:hover": {
-    borderColor: "#1E88E5",
-    backgroundColor: "#FAFAFA",
+    borderColor: "primary.main",
+    backgroundColor: "action.hover",
   },
   "& .MuiSelect-icon": {
-    color: "#718096",
+    color: "text.secondary",
     right: 8,
   },
+  boxShadow: (theme: { palette: { mode: string; primary: { main: string } } }) =>
+    theme.palette.mode === "dark"
+      ? `0 6px 14px ${alpha(theme.palette.primary.main, 0.2)}`
+      : "none",
 } as const;
