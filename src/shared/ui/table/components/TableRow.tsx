@@ -13,7 +13,10 @@ export interface Column<T> {
 export interface Action<T> {
   label: string;
   icon: ReactNode;
+  iconForRow?: (row: T) => ReactNode;
   colorHex?: string;
+  colorHexForRow?: (row: T) => string | undefined;
+  getLabel?: (row: T) => string;
   onClick: (row: T) => void;
 }
 
@@ -49,15 +52,20 @@ export const TableRow = <T extends { id?: string | number },>({
       {actions && actions.length > 0 && (
         <TableCell sx={{ ...tableStyles.cell, width: "132px", px: 1 }} align="center">
           <Box sx={{ display: "flex", gap: 0.25, justifyContent: "center", alignItems: "center" }}>
-            {actions.map((action, i) => (
-              <ActionIconButton
-                key={`${action.label}-${i}`}
-                label={action.label}
-                icon={action.icon}
-                colorHex={action.colorHex}
-                onClick={() => action.onClick(row)}
-              />
-            ))}
+            {actions.map((action, i) => {
+              const icon = action.iconForRow != null ? action.iconForRow(row) : action.icon;
+              const colorHex = action.colorHexForRow != null ? action.colorHexForRow(row) : action.colorHex;
+              const label = action.getLabel != null ? action.getLabel(row) : action.label;
+              return (
+                <ActionIconButton
+                  key={`${label}-${i}`}
+                  label={label}
+                  icon={icon}
+                  colorHex={colorHex}
+                  onClick={() => action.onClick(row)}
+                />
+              );
+            })}
           </Box>
         </TableCell>
       )}

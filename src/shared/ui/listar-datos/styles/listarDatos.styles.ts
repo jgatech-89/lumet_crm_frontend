@@ -16,11 +16,10 @@ export const listarDatosStyles = {
     },
   } satisfies SxProps<Theme>,
 
-  /** Padding del contenido de cada fila (ajustar con `dense` en el componente) */
   listItemContent: (dense: boolean) =>
     ({
       display: "flex",
-      alignItems: "flex-start",
+      alignItems: "center",
       justifyContent: "space-between",
       width: "100%",
       px: 2,
@@ -101,7 +100,6 @@ export const listarToolbarSx = (variant: ListarDatosVariant) =>
     minWidth: 0,
     width: "100%",
     gap: 2,
-    /** Embebido (p. ej. modales): menos aire vertical; tarjeta mantiene respiro. */
     py: variant === "embedded" ? 1 : 1.5,
     px: 2,
     ...(variant === "embedded"
