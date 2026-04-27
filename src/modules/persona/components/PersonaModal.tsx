@@ -1,5 +1,5 @@
 import {
-  Grid, TextField, MenuItem, Typography, Box, InputAdornment, Avatar
+  Grid, TextField, MenuItem, Typography, Box, Avatar, FormControl, FormHelperText, InputLabel
 } from '@mui/material';
 import {
   KeyboardArrowDown,
@@ -11,10 +11,13 @@ import {
 import { styled } from '@mui/material/styles';
 import { useEffect, type ReactNode } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import PhoneInput from 'react-phone-input-2';
+import { isValidPhoneNumber } from 'libphonenumber-js';
+import 'react-phone-input-2/lib/style.css';
 import { CustomButton } from '@/shared/ui/buttons/components/CustomButton';
 import { getButtonPreset } from '@/shared/ui/buttons/buttonPresets';
 import { CustomModal } from '@/shared/ui/modal/components/CustomModal';
-import type { PersonaFormValues, PersonaPayload, RolPersona } from '../types/persona.types';
+import type { PersonaFormValues, PersonaPayload, RolPersona } from '@/modules/persona/types/persona.types';
 
 // 2. Títulos de sección azules con punto (ej: • INFORMACIÓN PERSONAL)
 const SectionHeader = ({ title, icon }: { title: string; icon?: ReactNode }) => (
@@ -80,20 +83,9 @@ const CustomInput = styled(TextField)({
   },
 });
 
-// 4. Input específico para Teléfono con el prefijo +57
-const PhoneInput = styled(CustomInput)({
-  '& .MuiInputBase-input': {
-    paddingLeft: '46px', 
-  },
-  '@media (max-width:600px)': {
-    '& .MuiInputBase-input': {
-      paddingLeft: '46px',
-    },
-  },
-});
-
 const avatarRoleStyles: Record<RolPersona, { bg: string; color: string }> = {
   Administrador: { bg: '#ECEFF1', color: '#455A64' },
+  Usuario: { bg: '#F3E5F5', color: '#6A1B9A' },
   Supervisor: { bg: '#E3F2FD', color: '#1E88E5' },
   Comercial: { bg: '#E8F5E9', color: '#2E7D32' },
   Cerrador: { bg: '#FFF3E0', color: '#EF6C00' },
@@ -130,7 +122,7 @@ const buildAvatarInitials = (values: Pick<PersonaFormValues, 'primerNombre' | 's
 interface Props {
   open: boolean;
   onClose: () => void;
-  onSave?: (payload: PersonaPayload, formData: FormData) => Promise<void> | void;
+  onSave?: (payload: PersonaPayload) => Promise<void> | void;
   personaData?: PersonaFormValues | null;
 }
 
@@ -143,7 +135,7 @@ const DEFAULT_VALUES: PersonaFormValues = {
   numeroIdentificacion: '',
   correo: '',
   telefono: '',
-  rol: 'Administrador',
+  roles: ['Administrador'],
   estado: 'Activo',
   contrato: null,
 };
@@ -165,7 +157,7 @@ export const PersonaModal = ({ open, onClose, onSave, personaData }: Props) => {
   const segundoNombreValue = watch('segundoNombre');
   const primerApellidoValue = watch('primerApellido');
   const segundoApellidoValue = watch('segundoApellido');
-  const rolValue = watch('rol');
+  const rolesValue = watch('roles');
 
   const avatarInitials = buildAvatarInitials({
     primerNombre: primerNombreValue,
@@ -173,7 +165,7 @@ export const PersonaModal = ({ open, onClose, onSave, personaData }: Props) => {
     primerApellido: primerApellidoValue,
     segundoApellido: segundoApellidoValue,
   });
-  const avatarStyle = avatarRoleStyles[rolValue] ?? avatarRoleStyles.Administrador;
+  const avatarStyle = avatarRoleStyles[rolesValue?.[0] ?? 'Administrador'] ?? avatarRoleStyles.Administrador;
 
   useEffect(() => {
     if (!open) return;
@@ -182,7 +174,7 @@ export const PersonaModal = ({ open, onClose, onSave, personaData }: Props) => {
       reset({
         ...DEFAULT_VALUES,
         ...personaData,
-        telefono: personaData.telefono.replace(/^\+57/, '').replace(/\D/g, ''),
+        telefono: personaData.telefono,
       });
       return;
     }
@@ -196,7 +188,7 @@ export const PersonaModal = ({ open, onClose, onSave, personaData }: Props) => {
   };
 
   const onSubmit = async (values: PersonaFormValues) => {
-    const normalizedPhone = values.telefono.replace(/\D/g, '');
+    const normalizedPhone = values.telefono.replace(/\s+/g, '');
     const payload: PersonaPayload = {
       id: values.id,
       primerNombre: values.primerNombre.trim(),
@@ -206,28 +198,13 @@ export const PersonaModal = ({ open, onClose, onSave, personaData }: Props) => {
       tipoIdentificacion: values.tipoIdentificacion,
       numeroIdentificacion: values.numeroIdentificacion.trim(),
       correo: values.correo.trim().toLowerCase(),
-      telefono: `+57${normalizedPhone}`,
-      rol: values.rol,
+      telefono: normalizedPhone,
+      roles: values.roles,
       estado: values.estado,
       ...(values.contrato ? { contrato: values.contrato } : {}),
     };
 
-    const formData = new FormData();
-    formData.append('primerNombre', payload.primerNombre);
-    formData.append('segundoNombre', payload.segundoNombre);
-    formData.append('primerApellido', payload.primerApellido);
-    formData.append('segundoApellido', payload.segundoApellido);
-    formData.append('tipoIdentificacion', payload.tipoIdentificacion);
-    formData.append('numeroIdentificacion', payload.numeroIdentificacion);
-    formData.append('correo', payload.correo);
-    formData.append('telefono', payload.telefono);
-    formData.append('rol', payload.rol);
-    formData.append('estado', payload.estado);
-    if (values.contrato) {
-      formData.append('contrato', values.contrato);
-    }
-
-    await onSave?.(payload, formData);
+    await onSave?.(payload);
     reset(DEFAULT_VALUES);
     onClose();
   };
@@ -385,6 +362,7 @@ export const PersonaModal = ({ open, onClose, onSave, personaData }: Props) => {
                   <MenuItem value="CC">CC - Cedula de ciudadania</MenuItem>
                   <MenuItem value="CE">CE - Cedula de extranjeria</MenuItem>
                   <MenuItem value="PA">PA - Pasaporte</MenuItem>
+                  <MenuItem value="NIT">NIT</MenuItem>
                 </CustomInput>
               )}
             />
@@ -397,17 +375,21 @@ export const PersonaModal = ({ open, onClose, onSave, personaData }: Props) => {
               rules={{
                 required: 'El numero de identificacion es obligatorio',
                 pattern: {
-                  value: /^\d{6,15}$/,
-                  message: 'Debe contener solo numeros (6 a 15 digitos)',
+                  value: /^[a-zA-Z0-9]{3,}$/,
+                  message: 'La identificación debe tener al menos 3 caracteres y solo contener letras y números',
                 },
               }}
               render={({ field }) => (
                 <CustomInput
                   {...field}
+                  onChange={(event) => {
+                    const cleaned = event.target.value.replace(/[^a-zA-Z0-9]/g, '');
+                    field.onChange(cleaned);
+                  }}
                   fullWidth
                   size="small"
                   label="Numero de identificación"
-                  placeholder="000000000"
+                  placeholder="Ej. X12345"
                   slotProps={{ inputLabel: { shrink: true } }}
                   error={!!errors.numeroIdentificacion}
                   helperText={errors.numeroIdentificacion?.message}
@@ -448,31 +430,65 @@ export const PersonaModal = ({ open, onClose, onSave, personaData }: Props) => {
               control={control}
               rules={{
                 required: 'El teléfono es obligatorio',
-                pattern: {
-                  value: /^\d{10}$/,
-                  message: 'Debe contener 10 dígitos',
+                validate: (value) => {
+                  const normalized = (value ?? '').replace(/\s+/g, '');
+                  if (!/^\+[1-9]\d{6,14}$/.test(normalized)) {
+                    return 'Debe ingresar un número válido con prefijo internacional (ej: +34...)';
+                  }
+                  if (!isValidPhoneNumber(normalized)) {
+                    return 'Debe ingresar un número válido con prefijo internacional (ej: +34...)';
+                  }
+                  return true;
                 },
               }}
               render={({ field }) => (
-                <PhoneInput
-                  {...field}
-                  fullWidth
-                  size="small"
-                  label="Teléfono"
-                  placeholder="3000000000"
-                  slotProps={{
-                    inputLabel: { shrink: true },
-                    input: {
-                      startAdornment: (
-                        <InputAdornment position="start" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-                          +57
-                        </InputAdornment>
-                      ),
-                    },
-                  }}
-                  error={!!errors.telefono}
-                  helperText={errors.telefono?.message}
-                />
+                <FormControl fullWidth error={!!errors.telefono} size="small" sx={{ position: 'relative' }}>
+                  <InputLabel
+                    shrink
+                    sx={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      transform: 'translate(0px, -20px) scale(1)',
+                      transformOrigin: 'top left',
+                      fontWeight: 500,
+                      color: '#455A64',
+                      fontSize: '0.82rem',
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    Teléfono
+                  </InputLabel>
+                  <PhoneInput
+                    country="co"
+                    value={(field.value ?? '').replace(/^\+/, '')}
+                    onChange={(value) => field.onChange(value ? `+${value}` : '')}
+                    inputStyle={{
+                      width: '100%',
+                      height: '40px',
+                      borderRadius: '8px',
+                      border: `1px solid ${errors.telefono ? '#d32f2f' : '#EFEFEF'}`,
+                      backgroundColor: '#FCFCFD',
+                      fontSize: '0.9rem',
+                      fontWeight: 400,
+                      paddingLeft: '52px',
+                    }}
+                    buttonStyle={{
+                      height: '40px',
+                      borderTopLeftRadius: '8px',
+                      borderBottomLeftRadius: '8px',
+                      border: `1px solid ${errors.telefono ? '#d32f2f' : '#EFEFEF'}`,
+                      backgroundColor: '#FCFCFD',
+                    }}
+                    dropdownStyle={{ zIndex: 1600 }}
+                    enableSearch
+                    countryCodeEditable={false}
+                    placeholder="+34 600123456"
+                  />
+                  <FormHelperText sx={{ mt: '4px', minHeight: 18, fontSize: '0.74rem', lineHeight: 1.25 }}>
+                    {errors.telefono?.message ?? ''}
+                  </FormHelperText>
+                </FormControl>
               )}
             />
           </Grid>
@@ -481,18 +497,22 @@ export const PersonaModal = ({ open, onClose, onSave, personaData }: Props) => {
           
           <Grid size={{ xs: 12, sm: 6 }}>
             <Controller
-              name="rol"
+              name="roles"
               control={control}
+              rules={{ required: 'Debe seleccionar al menos un rol' }}
               render={({ field }) => (
                 <CustomInput
                   {...field}
                   fullWidth
                   size="small"
                   select
-                  label="Rol"
-                  slotProps={{ inputLabel: { shrink: true }, select: { IconComponent: KeyboardArrowDown } }}
+                  label="Roles"
+                  slotProps={{ inputLabel: { shrink: true }, select: { IconComponent: KeyboardArrowDown, multiple: true } }}
+                  error={!!errors.roles}
+                  helperText={errors.roles?.message}
                 >
                   <MenuItem value="Administrador">Administrador</MenuItem>
+                  <MenuItem value="Usuario">Usuario</MenuItem>
                   <MenuItem value="Supervisor">Supervisor</MenuItem>
                   <MenuItem value="Comercial">Comercial</MenuItem>
                   <MenuItem value="Cerrador">Cerrador</MenuItem>

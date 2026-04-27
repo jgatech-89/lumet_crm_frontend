@@ -13,10 +13,11 @@ import {
   PhoneOutlined,
   PersonOutline,
 } from '@mui/icons-material';
+import { parsePhoneNumberFromString } from 'libphonenumber-js';
 import { CustomButton } from '@/shared/ui/buttons/components/CustomButton';
 import { getButtonPreset } from '@/shared/ui/buttons/buttonPresets';
 import { CustomModal } from '@/shared/ui/modal/components/CustomModal';
-import type { PersonaSummary } from '../types/persona.types';
+import type { PersonaSummary, RolPersona } from '@/modules/persona/types/persona.types';
 
 interface Props {
   open: boolean;
@@ -26,8 +27,9 @@ interface Props {
   personaData: PersonaSummary | null;
 }
 
-const roleStyles: Record<PersonaSummary['rol'], { bg: string; color: string }> = {
+const roleStyles: Record<RolPersona, { bg: string; color: string }> = {
   Administrador: { bg: '#ECEFF1', color: '#455A64' },
+  Usuario: { bg: '#F3E5F5', color: '#6A1B9A' },
   Supervisor: { bg: '#E3F2FD', color: '#1E88E5' },
   Comercial: { bg: '#E8F5E9', color: '#2E7D32' },
   Cerrador: { bg: '#FFF3E0', color: '#EF6C00' },
@@ -64,7 +66,16 @@ const formatDocumentLabel = (type: string) => {
   if (type === 'CC') return 'CC - Cédula de ciudadanía';
   if (type === 'CE') return 'CE - Cédula de extranjería';
   if (type === 'PA') return 'PA - Pasaporte';
+  if (type === 'NIT') return 'NIT';
   return type;
+};
+
+const formatInternationalPhone = (rawPhone: string) => {
+  const phone = rawPhone.trim();
+  if (!phone) return 'No disponible';
+  const parsed = parsePhoneNumberFromString(phone);
+  if (!parsed) return phone;
+  return parsed.formatInternational();
 };
 
 const DetailCard = ({
@@ -108,9 +119,11 @@ const DetailField = ({ label, value }: { label: string; value: string }) => (
 
 export const PersonaDetailModal = ({ open, onClose, onExited, onEdit, personaData }: Props) => {
   const persona = personaData;
+  const rolesText = persona ? (persona.roles?.length ? persona.roles : persona.rol ? [persona.rol] : ["Comercial"]).join(' • ') : '';
+  const mainRole = persona ? (persona.rolPrincipal ?? persona.roles?.[0] ?? persona.rol ?? 'Comercial') : 'Supervisor';
   const initials = buildInitials(persona?.nombre ?? '');
   const documentInfo = parseDocument(persona?.idDocumento ?? '');
-  const roleStyle = persona ? roleStyles[persona.rol] : roleStyles.Supervisor;
+  const roleStyle = roleStyles[mainRole];
 //   const statusStyle = persona ? statusStyles[persona.estado] : statusStyles.Activo;
 
   return (
@@ -228,7 +241,7 @@ export const PersonaDetailModal = ({ open, onClose, onExited, onEdit, personaDat
                     fontWeight: 700,
                   }}
                 >
-                  {persona.rol}
+                  {rolesText}
                 </Box>
                 <Typography sx={{ fontSize: '0.72rem', color: '#6B7280', fontWeight: 500 }}>
                   ID: {persona.idDocumento.replace(':', '')}
@@ -280,7 +293,7 @@ export const PersonaDetailModal = ({ open, onClose, onExited, onEdit, personaDat
                           Teléfono
                         </Typography>
                         <Typography sx={{ fontSize: '1rem', fontWeight: 600, color: '#263238' }}>
-                          {persona.telefono}
+                          {formatInternationalPhone(persona.telefono)}
                         </Typography>
                       </Box>
                     </Stack>

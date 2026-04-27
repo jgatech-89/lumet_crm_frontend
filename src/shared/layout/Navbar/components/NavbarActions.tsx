@@ -22,17 +22,11 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import type { AuthUserPerfil } from "@/modules/auth/types/auth.types";
+import type { AuthUserRole } from "@/modules/auth/types/auth.types";
+import { getStoredActiveRoleId, setStoredActiveRoleId } from "@/core/modules/activeRoleSession";
 import { useAuth } from "@/core/auth/useAuth";
 import { useThemeMode } from "@/core/theme";
 import { useNavbar } from "../hooks/useNavbar";
-
-// ─── Mock: reemplazar con GET /personas/{id}/perfiles/ cuando el backend esté listo ──
-const MOCK_PERFILES_ADICIONALES: AuthUserPerfil[] = [
-  { id: 2, nombre: "Vendedor", codigo: "VENDEDOR" },
-  { id: 3, nombre: "Soporte Técnico", codigo: "SOPORTE" },
-];
-// ─────────────────────────────────────────────────────────────────────────────────────
 
 const getUserInitials = (
   firstName: string | null | undefined,
@@ -52,38 +46,42 @@ const avatarStyles = {
   fontWeight: 600,
 };
 
+function resolveActiveRole(roles: AuthUserRole[]): AuthUserRole | null {
+  if (!roles.length) return null;
+  const storedId = getStoredActiveRoleId();
+  if (storedId === undefined) return roles[0];
+  return roles.find((role) => role.id === storedId) ?? roles[0];
+}
+
 export const NavbarActions = () => {
   const { anchorEl, handleMenuOpen, handleMenuClose, isMenuOpen } =
     useNavbar();
   const { user, logout } = useAuth();
   const { mode, toggleMode } = useThemeMode();
+  const userRoles = user?.roles ?? [];
 
-  const [activeProfile, setActiveProfile] = useState<AuthUserPerfil | null>(
-    user?.perfil ?? null,
+  const [activeProfile, setActiveProfile] = useState<AuthUserRole | null>(
+    resolveActiveRole(userRoles),
   );
   const [profilesOpen, setProfilesOpen] = useState(false);
 
-  // Sincronizar perfil activo cuando el usuario carga desde la API
+  // Sincronizar perfil activo cuando cambian los roles del usuario.
   useEffect(() => {
-    if (user?.perfil) setActiveProfile(user.perfil);
-  }, [user?.perfil]);
+    const resolved = resolveActiveRole(userRoles);
+    setActiveProfile(resolved);
+    setStoredActiveRoleId(resolved?.id);
+  }, [userRoles]);
 
   // Cerrar la lista de perfiles al cerrar el menú principal
   useEffect(() => {
     if (!isMenuOpen) setProfilesOpen(false);
   }, [isMenuOpen]);
 
-  const allProfiles: AuthUserPerfil[] = activeProfile
-    ? [
-        activeProfile,
-        ...MOCK_PERFILES_ADICIONALES.filter((p) => p.id !== activeProfile.id),
-      ]
-    : MOCK_PERFILES_ADICIONALES;
+  const allProfiles: AuthUserRole[] = userRoles;
 
-  const handleSelectPerfil = (perfil: AuthUserPerfil) => {
-    // TODO: integración backend — llamar a POST /auth/switch-profile/ con { perfil_id: perfil.id }
-    // y actualizar user.perfil en AuthContext con la respuesta del servidor
+  const handleSelectPerfil = (perfil: AuthUserRole) => {
     setActiveProfile(perfil);
+    setStoredActiveRoleId(perfil.id);
     setProfilesOpen(false);
   };
 
@@ -319,46 +317,54 @@ export const NavbarActions = () => {
               overflow: "hidden",
             }}
           >
-            {allProfiles.map((perfil) => {
-              const isActive = perfil.id === activeProfile?.id;
-              return (
-                <MenuItem
-                  key={perfil.id}
-                  onClick={() => handleSelectPerfil(perfil)}
-                  sx={{
-                    py: 1.05,
-                    pl: 1.2,
-                    mx: 0.7,
-                    my: 0.35,
-                    borderRadius: "10px !important",
-                    bgcolor: isActive ? `${alpha("#2563eb", 0.1)} !important` : "transparent !important",
-                    "&:hover": {
-                      bgcolor: (t) =>
-                        `${alpha(t.palette.primary.main, 0.1)} !important`,
-                    },
-                  }}
-                >
-                  <ListItemIcon sx={{ minWidth: 28 }}>
-                    {isActive ? (
-                      <CheckCircleIcon fontSize="small" sx={{ color: "primary.main" }} />
-                    ) : (
-                      <CheckCircleOutlineIcon fontSize="small" sx={{ color: "text.disabled" }} />
-                    )}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={perfil.nombre}
-                    slotProps={{
-                      primary: {
-                        variant: "body2",
-                        fontWeight: isActive ? 600 : 500,
-                        color: isActive ? "primary.main" : "text.primary",
-                        noWrap: true,
+            {allProfiles.length ? (
+              allProfiles.map((perfil) => {
+                const isActive = perfil.id === activeProfile?.id;
+                return (
+                  <MenuItem
+                    key={perfil.id}
+                    onClick={() => handleSelectPerfil(perfil)}
+                    sx={{
+                      py: 1.05,
+                      pl: 1.2,
+                      mx: 0.7,
+                      my: 0.35,
+                      borderRadius: "10px !important",
+                      bgcolor: isActive ? `${alpha("#2563eb", 0.1)} !important` : "transparent !important",
+                      "&:hover": {
+                        bgcolor: (t) =>
+                          `${alpha(t.palette.primary.main, 0.1)} !important`,
                       },
                     }}
-                  />
-                </MenuItem>
-              );
-            })}
+                  >
+                    <ListItemIcon sx={{ minWidth: 28 }}>
+                      {isActive ? (
+                        <CheckCircleIcon fontSize="small" sx={{ color: "primary.main" }} />
+                      ) : (
+                        <CheckCircleOutlineIcon fontSize="small" sx={{ color: "text.disabled" }} />
+                      )}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={perfil.nombre}
+                      slotProps={{
+                        primary: {
+                          variant: "body2",
+                          fontWeight: isActive ? 600 : 500,
+                          color: isActive ? "primary.main" : "text.primary",
+                          noWrap: true,
+                        },
+                      }}
+                    />
+                  </MenuItem>
+                );
+              })
+            ) : (
+              <Box sx={{ px: 2, py: 1.2 }}>
+                <Typography variant="body2" color="text.secondary">
+                  No tienes perfiles asignados.
+                </Typography>
+              </Box>
+            )}
           </Box>
         </Collapse>
 

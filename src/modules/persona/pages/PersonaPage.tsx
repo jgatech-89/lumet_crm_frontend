@@ -3,27 +3,22 @@ import {
   Typography,
   Box,
   Stack,
-  Select,
-  MenuItem,
-  FormControl,
   Paper,
 } from "@mui/material";
-import { PersonAdd as PersonAddIcon, KeyboardArrowDown } from "@mui/icons-material";
+import { PersonAdd as PersonAddIcon } from "@mui/icons-material";
 
 import { CustomButton } from "@/shared/ui/buttons/components/CustomButton";
 import { getButtonPreset } from "@/shared/ui/buttons/buttonPresets";
 import { ConfirmModal } from "@/shared/ui/modal/components/ConfirmModal";
 import { AppSkeleton, LinearLoader } from "@/shared/ui/loading";
+import { Layout } from "@/shared/layout";
 
-import { PersonaDetailModal } from "../components/PersonaDetailModal";
-import { PersonaModal } from "../components/PersonaModal";
-import { PersonaTable } from "../components/PersonaTable";
-import { usePersonaPage } from "../hooks/usePersonaPage";
-import {
-  personaFilterLabelSx,
-  personaFilterSelectSx,
-  personaPageContainerSx,
-} from "../styles/personaPageStyles";
+import { PersonaDetailModal } from "@/modules/persona/components/PersonaDetailModal";
+import { PersonaFilters } from "@/modules/persona/components/PersonaFilters";
+import { PersonaForm } from "@/modules/persona/components/PersonaForm";
+import { PersonaTable } from "@/modules/persona/components/PersonaTable";
+import { usePersonaPage } from "@/modules/persona/hooks/usePersonaPage";
+import { personaPageContainerSx } from "@/modules/persona/styles/personaPageStyles";
 
 export function PersonaPage() {
   const primaryButtonPreset = getButtonPreset("primary");
@@ -36,11 +31,13 @@ export function PersonaPage() {
     selectedPersona,
     personaToDelete,
     isDeleting,
+    searchQuery,
     filterRol,
     filterEstado,
     tablePage,
     setFilterRol,
     setFilterEstado,
+    setSearchQuery,
     setTablePage,
     onOpenCreate,
     onOpenEdit,
@@ -56,27 +53,36 @@ export function PersonaPage() {
   } = usePersonaPage();
 
   return (
-    <Container maxWidth="lg" sx={personaPageContainerSx}>
+    <Layout
+      searchPlaceholder="Buscar personas..."
+      onSearch={setSearchQuery}
+    >
+      <Container maxWidth="lg" sx={personaPageContainerSx}>
       <Stack
         direction={{ xs: "column", sm: "row" }}
         justifyContent="space-between"
         alignItems={{ xs: "stretch", sm: "flex-start" }}
-        spacing={{ xs: 2.25, sm: 0 }}
-        mb={{ xs: 3, sm: 4 }}
+        spacing={{ xs: 1.5, sm: 0 }}
+        mb={{ xs: 2, sm: 2.5 }}
       >
         <Box>
           <Typography
-            variant="h3"
+            variant="h5"
             fontWeight={700}
             color="#263238"
             gutterBottom
-            sx={{ fontSize: { xs: "1.9rem", sm: "2.5rem" }, lineHeight: 1.12 }}
+            sx={{ fontSize: { xs: "1.25rem", sm: "1.45rem" }, lineHeight: 1.2, mb: 0.5 }}
           >
             Gestión de Personas
           </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ fontSize: { xs: "0.92rem", sm: "1rem" } }}>
+          <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: "0.85rem", sm: "0.9rem" } }}>
             administra tus supervisores y comerciales
           </Typography>
+          {searchQuery.trim() ? (
+            <Typography variant="caption" color="text.secondary">
+              Buscando: "{searchQuery.trim()}"
+            </Typography>
+          ) : null}
         </Box>
         <CustomButton
           label="Nueva persona"
@@ -90,62 +96,12 @@ export function PersonaPage() {
         />
       </Stack>
 
-      <Stack
-        direction={{ xs: "column", md: "row" }}
-        spacing={{ xs: 1.5, md: 4 }}
-        alignItems={{ xs: "stretch", md: "center" }}
-        mb={{ xs: 3, sm: 6 }}
-        sx={{ pl: { xs: 0, md: 1 } }}
-      >
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          spacing={1.5}
-          alignItems={{ xs: "flex-start", sm: "center" }}
-          sx={{ width: { xs: "100%", md: "auto" } }}
-        >
-          <Typography sx={{ ...personaFilterLabelSx, minWidth: { sm: "auto", md: 36 } }}>ROL:</Typography>
-          <FormControl variant="standard" sx={{ width: { xs: "100%", sm: "auto" } }}>
-            <Select
-              value={filterRol}
-              onChange={(e) => {
-                setFilterRol(e.target.value);
-              }}
-              disableUnderline
-              IconComponent={KeyboardArrowDown}
-              sx={personaFilterSelectSx}
-            >
-              <MenuItem value="todos">Todos los roles</MenuItem>
-              <MenuItem value="supervisor">Supervisor</MenuItem>
-              <MenuItem value="comercial">Comercial</MenuItem>
-              <MenuItem value="cerrador">Cerrador</MenuItem>
-            </Select>
-          </FormControl>
-        </Stack>
-
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          spacing={1.5}
-          alignItems={{ xs: "flex-start", sm: "center" }}
-          sx={{ width: { xs: "100%", md: "auto" } }}
-        >
-          <Typography sx={{ ...personaFilterLabelSx, minWidth: { sm: "auto", md: 58 } }}>ESTADO:</Typography>
-          <FormControl variant="standard" sx={{ width: { xs: "100%", sm: "auto" } }}>
-            <Select
-              value={filterEstado}
-              onChange={(e) => {
-                setFilterEstado(e.target.value);
-              }}
-              disableUnderline
-              IconComponent={KeyboardArrowDown}
-              sx={personaFilterSelectSx}
-            >
-              <MenuItem value="todos">Todos los estados</MenuItem>
-              <MenuItem value="activo">Activo</MenuItem>
-              <MenuItem value="inactivo">Inactivo</MenuItem>
-            </Select>
-          </FormControl>
-        </Stack>
-      </Stack>
+      <PersonaFilters
+        filterRol={filterRol}
+        filterEstado={filterEstado}
+        onChangeFilterRol={setFilterRol}
+        onChangeFilterEstado={setFilterEstado}
+      />
 
       {isListLoading ? (
         <Paper elevation={0} sx={{ borderRadius: 2, bgcolor: "#ffffff", p: { xs: 1.5, sm: 2 } }}>
@@ -163,7 +119,7 @@ export function PersonaPage() {
         />
       )}
 
-      <PersonaModal open={modalOpen} onClose={onCloseModal} onSave={onSavePersona} personaData={editingPersona} />
+      <PersonaForm open={modalOpen} onClose={onCloseModal} onSave={onSavePersona} personaData={editingPersona} />
 
       <PersonaDetailModal
         open={detailOpen}
@@ -181,7 +137,7 @@ export function PersonaPage() {
         description={
           personaToDelete ? (
             <>
-              Esta acción no se puede deshacer. Se eliminarán permanentemente los datos y documentos asociados a{" "}
+              La persona dejará de aparecer en listados (baja lógica en el sistema). Datos asociados a{" "}
               <strong>{personaToDelete.nombre}</strong>.
             </>
           ) : (
@@ -195,6 +151,7 @@ export function PersonaPage() {
         variant="danger"
         disableBackdropClose
       />
-    </Container>
+      </Container>
+    </Layout>
   );
 }

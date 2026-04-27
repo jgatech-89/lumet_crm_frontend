@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getRequestErrorMessage } from "@/core/api/client";
 import { useSnackbar } from "@/shared/context/SnackbarContext";
-import { createPersonaRequest, deletePersonaRequest, fetchPersonasRequest } from "../api/personaApi";
-import { PERSONA_ROWS_PER_PAGE } from "../constants/personaSeedData";
-import type { PersonaFormValues, PersonaPayload, PersonaSummary } from "../types/persona.types";
-import { parsePersonaSummaryToFormValues } from "../utils/personaMappers";
+import { createPersonaRequest, deletePersonaRequest, listPersonasRequest, updatePersonaRequest } from "@/modules/persona/api/personaApi";
+import { PERSONA_ROWS_PER_PAGE } from "@/modules/persona/constants/personaSeedData";
+import type { PersonaFormValues, PersonaPayload, PersonaSummary } from "@/modules/persona/types/persona.types";
+import { parsePersonaSummaryToFormValues } from "@/modules/persona/utils/personaMappers";
 
 export function usePersonaPage() {
   const { showSuccess, showError } = useSnackbar();
@@ -18,6 +18,7 @@ export function usePersonaPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [filterRol, setFilterRol] = useState("todos");
   const [filterEstado, setFilterEstado] = useState("todos");
+  const [searchQuery, setSearchQuery] = useState("");
   const [tablePage, setTablePage] = useState(1);
 
   useEffect(() => {
@@ -26,7 +27,7 @@ export function usePersonaPage() {
     const load = async () => {
       setIsListLoading(true);
       try {
-        const list = await fetchPersonasRequest();
+        const list = await listPersonasRequest();
         if (!cancelled) {
           setPersonas(list);
         }
@@ -50,16 +51,24 @@ export function usePersonaPage() {
   const filteredPersonas = useMemo(
     () =>
       personas.filter((persona) => {
-        const matchesRol = filterRol === "todos" || persona.rol.toLowerCase() === filterRol;
+        const currentRoles = persona.roles?.length ? persona.roles : persona.rol ? [persona.rol] : [];
+        const matchesRol = filterRol === "todos" || currentRoles.some((rol) => rol.toLowerCase() === filterRol);
         const matchesEstado = filterEstado === "todos" || persona.estado.toLowerCase() === filterEstado;
-        return matchesRol && matchesEstado;
+        const normalizedSearch = searchQuery.trim().toLowerCase();
+        const matchesSearch =
+          normalizedSearch.length === 0 ||
+          persona.nombre.toLowerCase().includes(normalizedSearch) ||
+          persona.idDocumento.toLowerCase().includes(normalizedSearch) ||
+          persona.email.toLowerCase().includes(normalizedSearch) ||
+          persona.telefono.toLowerCase().includes(normalizedSearch);
+        return matchesRol && matchesEstado && matchesSearch;
       }),
-    [personas, filterRol, filterEstado],
+    [personas, filterRol, filterEstado, searchQuery],
   );
 
   useEffect(() => {
     setTablePage(1);
-  }, [filterRol, filterEstado]);
+  }, [filterRol, filterEstado, searchQuery]);
 
   useEffect(() => {
     const totalPages = Math.max(1, Math.ceil(filteredPersonas.length / PERSONA_ROWS_PER_PAGE));
@@ -129,16 +138,39 @@ export function usePersonaPage() {
     setEditingPersona(null);
   }, []);
 
+  const validatePersonaPayload = useCallback((payload: PersonaPayload): string | null => {
+    if (!payload.roles?.length) {
+      return "Debe seleccionar al menos un rol.";
+    }
+    if (!/^\+[1-9]\d{6,14}$/.test(payload.telefono.replace(/\s+/g, ""))) {
+      return "Debe ingresar un número válido con prefijo internacional (ej: +34...).";
+    }
+    if (!/^[a-zA-Z0-9]{3,}$/.test(payload.numeroIdentificacion.trim())) {
+      return "La identificación debe tener al menos 3 caracteres y solo contener letras y números.";
+    }
+    return null;
+  }, []);
+
   const onSavePersona = useCallback(
-    async (payload: PersonaPayload, formData: FormData) => {
+    async (payload: PersonaPayload) => {
       try {
-        const saved = await createPersonaRequest(payload, formData);
+        const validationError = validatePersonaPayload(payload);
+        if (validationError) {
+          showError(validationError);
+          throw new Error(validationError);
+        }
+        const saved = payload.id
+          ? await updatePersonaRequest(payload.id, payload)
+          : await createPersonaRequest(payload);
         setPersonas((prev) => {
           if (payload.id) {
-            return prev.map((p) => (p.id === payload.id ? saved : p));
+            return prev.map((p) => (p.id === saved.id ? saved : p));
           }
           return [...prev, saved];
         });
+        // Rehidrata desde backend para reflejar inmediatamente cualquier cambio derivado (roles, normalizaciones).
+        const refreshed = await listPersonasRequest();
+        setPersonas(refreshed);
         showSuccess(payload.id ? "Persona actualizada correctamente." : "Persona creada correctamente.");
         setModalOpen(false);
         setEditingPersona(null);
@@ -147,7 +179,7 @@ export function usePersonaPage() {
         throw error;
       }
     },
-    [showSuccess, showError],
+    [showSuccess, showError, validatePersonaPayload],
   );
 
   return {
@@ -159,11 +191,13 @@ export function usePersonaPage() {
     selectedPersona,
     personaToDelete,
     isDeleting,
+    searchQuery,
     filterRol,
     filterEstado,
     tablePage,
     setFilterRol,
     setFilterEstado,
+    setSearchQuery,
     setTablePage,
     onOpenCreate,
     onOpenEdit,

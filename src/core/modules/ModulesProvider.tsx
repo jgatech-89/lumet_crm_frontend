@@ -3,24 +3,28 @@ import { useContext, useEffect, useMemo, useState, type ReactNode } from "react"
 import { useAuth } from "@/core/auth/useAuth";
 import { subscribeTokensCleared } from "@/core/auth/tokenStorage";
 
+import { getStoredActiveRoleId, setStoredActiveRoleId, subscribeActiveRoleChanges } from "./activeRoleSession";
 import { ModulesContext, type ModulesContextValue } from "./modulesContext";
 import { getModuleByCode } from "./modules.config";
 import { clearModulesSession, getModulesSession } from "./modulesSession";
 import type { ModulePermissionItem, SidebarModuleItem } from "./types";
 import { useAllowedModules } from "./useAllowedModules";
 
-function perfilIdFromUser(user: { perfil: unknown } | null): number | undefined {
-  const perfil = user?.perfil;
-  if (
-    perfil &&
-    typeof perfil === "object" &&
-    "id" in perfil &&
-    typeof (perfil as { id: unknown }).id === "number"
-  ) {
-    return (perfil as { id: number }).id;
-  }
+type UserRole = { id: number };
 
-  return undefined;
+function perfilIdFromUser(user: { roles?: unknown } | null, selectedRoleId?: number): number | undefined {
+  if (!Array.isArray(user?.roles)) return undefined;
+  const roles = user.roles.filter(
+    (role): role is UserRole =>
+      !!role &&
+      typeof role === "object" &&
+      "id" in role &&
+      typeof (role as { id: unknown }).id === "number",
+  );
+  if (!roles.length) return undefined;
+  if (selectedRoleId === undefined) return roles[0].id;
+  const selected = roles.find((role) => role.id === selectedRoleId);
+  return selected?.id ?? roles[0].id;
 }
 
 function buildSidebarItems(items: ModulePermissionItem[]): SidebarModuleItem[] {
@@ -52,7 +56,8 @@ function buildSidebarItems(items: ModulePermissionItem[]): SidebarModuleItem[] {
 
 export function ModulesProvider({ children }: { children: ReactNode }) {
   const { user, loading: authLoading } = useAuth();
-  const perfilId = perfilIdFromUser(user);
+  const [selectedRoleId, setSelectedRoleId] = useState<number | undefined>(() => getStoredActiveRoleId());
+  const perfilId = perfilIdFromUser(user, selectedRoleId);
 
   const [items, setItems] = useState<ModulePermissionItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,6 +65,14 @@ export function ModulesProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     return subscribeTokensCleared(() => {
       clearModulesSession();
+      setStoredActiveRoleId(undefined);
+      setSelectedRoleId(undefined);
+    });
+  }, []);
+
+  useEffect(() => {
+    return subscribeActiveRoleChanges((roleId) => {
+      setSelectedRoleId(roleId);
     });
   }, []);
 

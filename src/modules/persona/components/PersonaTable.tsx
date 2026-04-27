@@ -5,12 +5,13 @@ import {
   VisibilityOutlined as ViewIcon,
 } from "@mui/icons-material";
 import { useMemo } from "react";
+import type { ApiPagination } from "@/core/api/types";
 import { Table } from "@/shared/ui/table";
 import type { Action, Column } from "@/shared/ui/table";
-import { PERSONA_ROWS_PER_PAGE } from "../constants/personaSeedData";
-import { personaAvatarRoleStyles, personaRolBadgeStyles } from "../styles/personaPageStyles";
-import type { PersonaSummary } from "../types/persona.types";
-import { getPersonaDisplayInitials } from "../utils/personaMappers";
+import { PERSONA_ROWS_PER_PAGE } from "@/modules/persona/constants/personaSeedData";
+import { personaAvatarRoleStyles, personaRolBadgeStyles } from "@/modules/persona/styles/personaPageStyles";
+import type { PersonaSummary } from "@/modules/persona/types/persona.types";
+import { getPersonaDisplayInitials } from "@/modules/persona/utils/personaMappers";
 
 interface PersonaTableProps {
   rows: PersonaSummary[];
@@ -29,13 +30,34 @@ export function PersonaTable({
   onEdit,
   onAskDelete,
 }: PersonaTableProps) {
+  const pagination = useMemo<ApiPagination>(() => {
+    const total = rows.length;
+    const totalPages = Math.max(1, Math.ceil(total / PERSONA_ROWS_PER_PAGE));
+    const safePage = Math.min(Math.max(1, page), totalPages);
+    return {
+      page: safePage,
+      limit: PERSONA_ROWS_PER_PAGE,
+      total,
+      totalPages,
+      next: safePage < totalPages ? String(safePage + 1) : null,
+      previous: safePage > 1 ? String(safePage - 1) : null,
+    };
+  }, [rows.length, page]);
+
+  const pagedRows = useMemo(() => {
+    const start = (pagination.page - 1) * PERSONA_ROWS_PER_PAGE;
+    const end = start + PERSONA_ROWS_PER_PAGE;
+    return rows.slice(start, end);
+  }, [rows, pagination.page]);
+
   const columns: Column<PersonaSummary>[] = useMemo(
     () => [
       {
         key: "nombre",
         label: "PERSONA",
         render: (persona) => {
-          const avatar = personaAvatarRoleStyles[persona.rol];
+          const mainRole = persona.rolPrincipal ?? persona.roles?.[0] ?? persona.rol ?? "Comercial";
+          const avatar = personaAvatarRoleStyles[mainRole];
           return (
             <Stack direction="row" spacing={2} alignItems="center">
               <Avatar
@@ -66,7 +88,9 @@ export function PersonaTable({
         key: "rol",
         label: "ROL",
         render: (persona) => {
-          const chip = personaRolBadgeStyles[persona.rol];
+          const mainRole = persona.rolPrincipal ?? persona.roles?.[0] ?? persona.rol ?? "Comercial";
+          const chip = personaRolBadgeStyles[mainRole];
+          const rolesText = (persona.roles?.length ? persona.roles : persona.rol ? [persona.rol] : [mainRole]).join(" • ");
           return (
             <Box
               component="span"
@@ -81,7 +105,7 @@ export function PersonaTable({
                 display: "inline-block",
               }}
             >
-              {persona.rol}
+              {rolesText}
             </Box>
           );
         },
@@ -151,11 +175,11 @@ export function PersonaTable({
   return (
     <Paper elevation={0} sx={{ borderRadius: 2, bgcolor: "#ffffff", overflow: "hidden" }}>
       <Table
-        data={rows}
+        data={pagedRows}
         columns={columns}
         actions={actions}
-        rowsPerPage={PERSONA_ROWS_PER_PAGE}
-        pagination={{ page, onPageChange }}
+        pagination={pagination}
+        onPageChange={onPageChange}
         actionsColumnLabel="ACCIONES"
       />
     </Paper>

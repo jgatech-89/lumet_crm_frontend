@@ -4,7 +4,7 @@ export interface AuthTokens {
 }
 
 /** Coincide con `ValorGenericaListSerializer` en `/auth/me/`. */
-export interface AuthUserPerfil {
+export interface AuthUserRole {
   id: number;
   nombre: string;
   codigo: string;
@@ -15,7 +15,7 @@ export interface AuthUserPerfil {
 
 export interface AuthUser {
   id: number;
-  tipo_identificacion: string;
+  tipo_identificacion: AuthUserRole;
   identificacion: string;
   primer_nombre: string;
   segundo_nombre: string;
@@ -24,7 +24,7 @@ export interface AuthUser {
   email: string;
   correo_auth: string | null;
   telefono: string | null;
-  perfil: AuthUserPerfil;
+  roles: AuthUserRole[];
   estado: string;
   verificado: boolean;
 }
