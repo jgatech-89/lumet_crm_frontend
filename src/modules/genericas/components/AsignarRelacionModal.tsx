@@ -359,7 +359,7 @@ export function AsignarRelacionModal({
         }}
         actions={
           <CustomButton
-            label="Cerrar"
+            label="Cancelar"
             variant="outlined"
             color="primary"
             onClick={onCloseGenericaPicker}

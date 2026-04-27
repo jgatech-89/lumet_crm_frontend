@@ -35,7 +35,7 @@ export function ValorGenericaDetailModal({
       contentLoadingLabel="Cargando detalle..."
       actions={
         <CustomButton
-          label="Cerrar"
+          label="Cancelar"
           variant="outlined"
           onClick={onClose}
           sx={{

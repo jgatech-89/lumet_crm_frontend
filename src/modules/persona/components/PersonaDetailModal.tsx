@@ -10,6 +10,7 @@ import {
 import { alpha } from '@mui/material/styles';
 import {
   BadgeOutlined,
+  EditOutlined,
   EmailOutlined,
   PhoneOutlined,
   PersonOutline,
@@ -122,38 +123,30 @@ export const PersonaDetailModal = ({ open, onClose, onExited, onEdit, personaDat
       contentLoadingLabel="Cargando detalle..."
       TransitionProps={onExited ? { onExited } : undefined}
       title={(
-        <Typography sx={{ fontSize: { xs: "1.08rem", sm: "1.18rem" }, fontWeight: 700, color: 'text.primary', lineHeight: 1.1, mb: 0.35 }}>
+        <Typography sx={{ fontSize: '1.06rem', fontWeight: 600, color: 'text.primary', lineHeight: 1.2 }}>
           Detalle de Persona
         </Typography>
       )}
       subtitle={(
-        <Typography sx={{ fontSize: '0.88rem', fontWeight: 400, color: 'text.secondary', lineHeight: 1.25 }}>
+        <Typography sx={{ fontSize: '0.82rem', fontWeight: 400, color: 'text.secondary', lineHeight: 1.35 }}>
           Visualización de perfil de colaborador
         </Typography>
       )}
-      contentSx={{ pt: 0, px: { xs: 1.75, sm: 3 }, pb: 1.5 }}
-      actionsSx={{
-        bgcolor: 'transparent',
-        px: { xs: 1.75, sm: 2 },
-        pb: 1.5,
-        mt: 0.25,
-        pt: 0.5,
-        justifyContent: 'flex-start',
-        gap: 1.5,
-        flexWrap: 'wrap',
-      }}
+      contentSx={{ border: 'none', pt: 0, px: { xs: 1.75, sm: 2 }, pb: { xs: 1.25, sm: 0.5 } }}
+      actionsSx={{ bgcolor: 'transparent', px: { xs: 1.75, sm: 2 }, pb: 1.5, mt: 0.25, pt: 0.5 }}
       actions={personaData ? (
         <>
           <CustomButton
-            label="Editar información"
-            onClick={() => onEdit(personaData)}
-            {...getButtonPreset('save')}
-          />
-          <CustomButton
-            label="Cerrar"
+            label="Cancelar"
             type="button"
             onClick={onClose}
             {...getButtonPreset('cancel')}
+          />
+          <CustomButton
+            label="Editar información"
+            onClick={() => onEdit(personaData)}
+            startIcon={<EditOutlined />}
+            {...getButtonPreset('save')}
           />
         </>
       ) : undefined}

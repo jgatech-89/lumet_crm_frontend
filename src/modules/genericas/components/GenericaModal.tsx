@@ -1,5 +1,6 @@
 import { CustomModal } from "@/shared/ui/modal/components/CustomModal";
 import { CustomButton } from "@/shared/ui/buttons/components/CustomButton";
+import { getButtonPreset } from "@/shared/ui/buttons/buttonPresets";
 import { useGenericaForm } from "../hooks/useGenericaForm";
 import { GenericaModalForm, NUEVA_GENERICA_MODAL_FORM_ID } from "./GenericaForm";
 import type { Generica } from "../types/genericas.types";
@@ -55,15 +56,10 @@ export function GenericaModal({ open, onClose, onCreated, mode, initialData }: G
           />
           <CustomButton
             label={mode === "create" ? "Guardar" : "Actualizar"}
-            variant="contained"
             type="submit"
             form={NUEVA_GENERICA_MODAL_FORM_ID}
             loading={saving}
-            colorHex="#2563eb"
-            sx={{
-              fontWeight: 600,
-              boxShadow: "0 8px 18px rgba(37,99,235,0.24)",
-            }}
+            {...getButtonPreset("save")}
           />
         </>
       }
