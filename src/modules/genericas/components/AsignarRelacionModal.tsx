@@ -14,24 +14,13 @@ import {
   ListAlt,
 } from "@mui/icons-material";
 import { CustomModal } from "@/shared/ui/modal/components/CustomModal";
-import { CustomButton } from "@/shared/ui/buttons/components/CustomButton";
+import { CancelarBoton } from "@/shared/ui/buttons/components/BotonesAccionCrud";
 import { ListarDatos } from "@/shared/ui/listar-datos";
 import type { Generica, ValorGenericaConPermiso } from "../types/genericas.types";
 import type { Action } from "@/shared/ui/table/components/TableRow";
 
 const PICKER_MODAL_SUBTITLE =
   "Busca o elige en la lista la genérica que servirá de criterio para el vínculo.";
-
-const MODAL_OUTLINED_SECONDARY_SX = {
-  borderColor: "divider",
-  color: "text.secondary",
-  fontWeight: 500,
-  "&:hover": {
-    borderColor: "primary.light",
-    backgroundColor: "action.hover",
-    color: "text.primary",
-  },
-} as const;
 
 type AsignarRelacionModalProps = {
   open: boolean;
@@ -265,15 +254,7 @@ export function AsignarRelacionModal({
           gap: 0,
           minHeight: 0,
         }}
-        actions={
-          <CustomButton
-            label="Cancelar"
-            variant="outlined"
-            color="primary"
-            onClick={onClose}
-            sx={MODAL_OUTLINED_SECONDARY_SX}
-          />
-        }
+        actions={<CancelarBoton onClick={onClose} />}
         actionsSx={{ bgcolor: "transparent", px: { xs: 1.75, sm: 2 }, pb: 1.5, mt: 0.25, pt: 0.5 }}
       >
         <Stack spacing={2.5} sx={{ width: 1, alignItems: "stretch", pt: 1.5 }}>
@@ -357,15 +338,7 @@ export function AsignarRelacionModal({
           px: 2.5,
           pb: 2.25,
         }}
-        actions={
-          <CustomButton
-            label="Cancelar"
-            variant="outlined"
-            color="primary"
-            onClick={onCloseGenericaPicker}
-            sx={MODAL_OUTLINED_SECONDARY_SX}
-          />
-        }
+        actions={<CancelarBoton onClick={onCloseGenericaPicker} />}
         actionsSx={{ bgcolor: "transparent", px: { xs: 1.75, sm: 2 }, pb: 1.5, mt: 0.25, pt: 0.5 }}
         slotProps={{ paper: { sx: mainPaperSx } }}
       >

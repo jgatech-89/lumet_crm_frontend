@@ -10,14 +10,12 @@ import {
 import { alpha } from '@mui/material/styles';
 import {
   BadgeOutlined,
-  EditOutlined,
   EmailOutlined,
   PhoneOutlined,
   PersonOutline,
 } from '@mui/icons-material';
 import { parsePhoneNumberFromString } from 'libphonenumber-js';
-import { CustomButton } from '@/shared/ui/buttons/components/CustomButton';
-import { getButtonPreset } from '@/shared/ui/buttons/buttonPresets';
+import { CancelarBoton, EditarBoton } from '@/shared/ui/buttons/components/BotonesAccionCrud';
 import { CustomModal } from '@/shared/ui/modal/components/CustomModal';
 import { getPersonaRoleChipSx } from '@/modules/persona/styles/personaPageStyles';
 import type { PersonaSummary, RolPersona } from '@/modules/persona/types/persona.types';
@@ -136,18 +134,8 @@ export const PersonaDetailModal = ({ open, onClose, onExited, onEdit, personaDat
       actionsSx={{ bgcolor: 'transparent', px: { xs: 1.75, sm: 2 }, pb: 1.5, mt: 0.25, pt: 0.5 }}
       actions={personaData ? (
         <>
-          <CustomButton
-            label="Cancelar"
-            type="button"
-            onClick={onClose}
-            {...getButtonPreset('cancel')}
-          />
-          <CustomButton
-            label="Editar información"
-            onClick={() => onEdit(personaData)}
-            startIcon={<EditOutlined />}
-            {...getButtonPreset('save')}
-          />
+          <CancelarBoton type="button" onClick={onClose} />
+          <EditarBoton label="Editar información" onClick={() => onEdit(personaData)} />
         </>
       ) : undefined}
     >

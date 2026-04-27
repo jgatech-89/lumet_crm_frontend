@@ -1,6 +1,6 @@
 import { CustomModal } from "@/shared/ui/modal/components/CustomModal";
 import { ConfirmModal } from "@/shared/ui/modal/components/ConfirmModal";
-import { CustomButton } from "@/shared/ui/buttons/components/CustomButton";
+import { CancelarBoton, GuardarBoton } from "@/shared/ui/buttons/components/BotonesAccionCrud";
 import { ListarDatos } from "@/shared/ui/listar-datos";
 import type { ValorGenerica, ValorGenericaDetail } from "../types/genericas.types";
 import { formatAppDate } from "@/shared/utils";
@@ -83,28 +83,8 @@ export function GenericaModalList({
             contentSx={genericaModalListContentSx}
             actions={
                 <>
-                    <CustomButton
-                        label="Cancelar"
-                        variant="outlined"
-                        onClick={onClose}
-                        sx={{
-                            borderColor: "divider",
-                            color: "text.secondary",
-                            fontWeight: 500,
-                            "&:hover": {
-                                borderColor: "primary.light",
-                                backgroundColor: "action.hover",
-                                color: "text.primary",
-                            },
-                        }}
-                    />
-                    <CustomButton
-                        label="Crear"
-                        variant="contained"
-                        color="primary"
-                        startIcon={<Add />}
-                        onClick={() => onCrearValor?.()}
-                    />
+                    <CancelarBoton onClick={onClose} />
+                    <GuardarBoton label="Crear" startIcon={<Add />} onClick={() => onCrearValor?.()} />
                 </>
             }
         >

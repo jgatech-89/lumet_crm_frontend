@@ -3,7 +3,6 @@ import {
 } from '@mui/material';
 import {
   KeyboardArrowDown,
-  SaveOutlined,
   PersonOutline,
   DescriptionOutlined,
   SettingsOutlined,
@@ -14,8 +13,7 @@ import { Controller, useForm } from 'react-hook-form';
 import PhoneInput from 'react-phone-input-2';
 import { isValidPhoneNumber } from 'libphonenumber-js';
 import 'react-phone-input-2/lib/style.css';
-import { CustomButton } from '@/shared/ui/buttons/components/CustomButton';
-import { getButtonPreset } from '@/shared/ui/buttons/buttonPresets';
+import { CancelarBoton, GuardarBoton } from '@/shared/ui/buttons/components/BotonesAccionCrud';
 import { CustomModal } from '@/shared/ui/modal/components/CustomModal';
 import { getPersonaRoleTone } from '@/modules/persona/styles/personaPageStyles';
 import type { PersonaFormValues, PersonaPayload, RolPersona } from '@/modules/persona/types/persona.types';
@@ -219,20 +217,12 @@ export const PersonaModal = ({ open, onClose, onSave, personaData }: Props) => {
       actionsSx={{ bgcolor: 'transparent', px: { xs: 1.75, sm: 2 }, pb: 1.5, mt: 0.25, pt: 0.5 }}
       actions={(
         <>
-          <CustomButton
-            label="Cancelar"
-            type="button"
-            onClick={handleClose}
-            disabled={isSubmitting}
-            {...getButtonPreset('cancel')}
-          />
-          <CustomButton
+          <CancelarBoton type="button" onClick={handleClose} disabled={isSubmitting} />
+          <GuardarBoton
             label={isEdit ? 'Guardar Cambios' : 'Guardar persona'}
             type="submit"
             form="persona-form"
             disabled={isSubmitting}
-            startIcon={isEdit ? <SaveOutlined /> : undefined}
-            {...getButtonPreset('save')}
           />
         </>
       )}

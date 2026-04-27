@@ -1,6 +1,11 @@
-import { Button, Typography, Stack, Box } from '@mui/material';
+import { Typography, Stack, Box } from '@mui/material';
 import { WarningAmber as WarningIcon, Info as InfoIcon } from '@mui/icons-material';
 import { alpha, useTheme } from '@mui/material/styles';
+import {
+  GuardarBoton,
+  CancelarBoton,
+  EliminarBoton,
+} from '@/shared/ui/buttons/components/BotonesAccionCrud';
 import { CustomModal } from './CustomModal';
 import { ConfirmModalProps } from '../types/ConfirmModal.types';
 
@@ -62,53 +67,27 @@ export const ConfirmModal = ({
       }}
       actions={
         <Stack spacing={1.25} width="100%" sx={{ mt: 0.5, px: 0.5 }}>
-          <Button
-            fullWidth
-            onClick={handleConfirm}
-            variant="contained"
-            disabled={loading}
-            sx={{
-              bgcolor: buttonColor,
-              color: 'common.white',
-              fontWeight: 600,
-              fontSize: '0.94rem',
-              py: 1.3,
-              borderRadius: '9px',
-              textTransform: 'none',
-              '&:hover': {
-                bgcolor: variant === 'danger' ? 'error.dark' : 'primary.dark',
-              },
-              '&:disabled': {
-                bgcolor: 'action.disabledBackground',
-                color: 'text.disabled',
-              },
-            }}
-          >
-            {loading ? loadingText : confirmText}
-          </Button>
+          {variant === 'danger' ? (
+            <EliminarBoton
+              fullWidth
+              label={loading ? loadingText : confirmText}
+              loading={loading}
+              onClick={handleConfirm}
+            />
+          ) : (
+            <GuardarBoton
+              fullWidth
+              label={loading ? loadingText : confirmText}
+              loading={loading}
+              onClick={handleConfirm}
+              sx={{
+                bgcolor: buttonColor,
+                '&:hover': { bgcolor: 'primary.dark' },
+              }}
+            />
+          )}
 
-          <Button
-            fullWidth
-            onClick={onClose}
-            disabled={loading}
-            sx={{
-              color: 'text.secondary',
-              fontWeight: 500,
-              fontSize: '0.9rem',
-              py: 0.9,
-              borderRadius: '9px',
-              textTransform: 'none',
-              bgcolor: 'transparent',
-              '&:hover': {
-                bgcolor: 'action.hover',
-              },
-              '&:disabled': {
-                color: 'text.disabled',
-              },
-            }}
-          >
-            {cancelText}
-          </Button>
+          <CancelarBoton fullWidth label={cancelText} onClick={onClose} disabled={loading} />
         </Stack>
       }
     >

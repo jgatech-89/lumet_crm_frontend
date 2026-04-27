@@ -1,6 +1,5 @@
 import { CustomModal } from "@/shared/ui/modal/components/CustomModal";
-import { CustomButton } from "@/shared/ui/buttons/components/CustomButton";
-import { getButtonPreset } from "@/shared/ui/buttons/buttonPresets";
+import { CancelarBoton, GuardarBoton } from "@/shared/ui/buttons/components/BotonesAccionCrud";
 import { useGenericaForm } from "../hooks/useGenericaForm";
 import { GenericaModalForm, NUEVA_GENERICA_MODAL_FORM_ID } from "./GenericaForm";
 import type { Generica } from "../types/genericas.types";
@@ -38,28 +37,12 @@ export function GenericaModal({ open, onClose, onCreated, mode, initialData }: G
       actionsSx={{ bgcolor: "transparent", px: { xs: 1.75, sm: 2 }, pb: 1.5, mt: 0.25, pt: 0.5 }}
       actions={
         <>
-          <CustomButton
-            label="Cancelar"
-            variant="outlined"
-            onClick={handleClose}
-            disabled={saving}
-            sx={{
-              borderColor: "divider",
-              color: "text.secondary",
-              fontWeight: 500,
-              "&:hover": {
-                borderColor: "primary.light",
-                backgroundColor: "action.hover",
-                color: "text.primary",
-              },
-            }}
-          />
-          <CustomButton
+          <CancelarBoton onClick={handleClose} disabled={saving} />
+          <GuardarBoton
             label={mode === "create" ? "Guardar" : "Actualizar"}
             type="submit"
             form={NUEVA_GENERICA_MODAL_FORM_ID}
             loading={saving}
-            {...getButtonPreset("save")}
           />
         </>
       }
