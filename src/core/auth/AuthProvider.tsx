@@ -9,6 +9,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 import type { ApiResponse } from "@/core/api/types";
+import { syncActiveRoleFromServerUser } from "@/core/modules/activeRoleSession";
 import { fetchMeRequest } from "@/modules/auth/api/authApi";
 import type { AuthTokens, AuthUser } from "@/modules/auth/types/auth.types";
 
@@ -88,7 +89,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchMe = useCallback(async () => {
     try {
       clearMeCache();
-      return await fetchMeOnceForCurrentToken();
+      const me = await fetchMeOnceForCurrentToken();
+      setUser(me);
+      syncActiveRoleFromServerUser(me);
+      return me;
     } catch (error) {
       if (isUnauthorized(error)) {
         endSession(false);
@@ -104,6 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const me = await fetchMeOnceForCurrentToken();
         setUser(me);
+        syncActiveRoleFromServerUser(me);
       } catch (error) {
         if (isUnauthorized(error)) {
           endSession(false);
@@ -129,7 +134,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       try {
         const me = await fetchMeOnceForCurrentToken();
-        if (!cancelled) setUser(me);
+        if (!cancelled) {
+          setUser(me);
+          syncActiveRoleFromServerUser(me);
+        }
       } catch (error) {
         if (!cancelled) {
           if (isUnauthorized(error)) {

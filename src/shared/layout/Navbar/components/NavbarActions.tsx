@@ -22,8 +22,10 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import type { AuthUserRole } from "@/modules/auth/types/auth.types";
+import type { AuthUser, AuthUserRole } from "@/modules/auth/types/auth.types";
 import { getStoredActiveRoleId, setStoredActiveRoleId } from "@/core/modules/activeRoleSession";
+import { patchMePerfilActivoRequest } from "@/modules/auth/api/authApi";
+import { clearModulesSession } from "@/core/modules/modulesSession";
 import { useAuth } from "@/core/auth/useAuth";
 import { useThemeMode } from "@/core/theme";
 import { useNavbar } from "../hooks/useNavbar";
@@ -46,8 +48,13 @@ const avatarStyles = {
   fontWeight: 600,
 };
 
-function resolveActiveRole(roles: AuthUserRole[]): AuthUserRole | null {
+function resolveActiveRole(user: AuthUser | null, roles: AuthUserRole[]): AuthUserRole | null {
   if (!roles.length) return null;
+  const serverId = user?.perfil_activo_id ?? user?.perfil_activo?.id;
+  if (serverId !== undefined && serverId !== null) {
+    const match = roles.find((role) => role.id === serverId);
+    if (match) return match;
+  }
   const storedId = getStoredActiveRoleId();
   if (storedId === undefined) return roles[0];
   return roles.find((role) => role.id === storedId) ?? roles[0];
@@ -56,21 +63,24 @@ function resolveActiveRole(roles: AuthUserRole[]): AuthUserRole | null {
 export const NavbarActions = () => {
   const { anchorEl, handleMenuOpen, handleMenuClose, isMenuOpen } =
     useNavbar();
-  const { user, logout } = useAuth();
+  const { user, logout, fetchMe } = useAuth();
   const { mode, toggleMode } = useThemeMode();
   const userRoles = user?.roles ?? [];
 
   const [activeProfile, setActiveProfile] = useState<AuthUserRole | null>(
-    resolveActiveRole(userRoles),
+    () => resolveActiveRole(user, userRoles),
   );
   const [profilesOpen, setProfilesOpen] = useState(false);
+  const [switchingProfile, setSwitchingProfile] = useState(false);
 
-  // Sincronizar perfil activo cuando cambian los roles del usuario.
+  // Sincronizar perfil activo cuando cambian los roles o el perfil persistido en servidor.
   useEffect(() => {
-    const resolved = resolveActiveRole(userRoles);
+    const resolved = resolveActiveRole(user, userRoles);
     setActiveProfile(resolved);
-    setStoredActiveRoleId(resolved?.id);
-  }, [userRoles]);
+    if (resolved?.id !== undefined) {
+      setStoredActiveRoleId(resolved.id);
+    }
+  }, [user, userRoles]);
 
   // Cerrar la lista de perfiles al cerrar el menú principal
   useEffect(() => {
@@ -79,10 +89,21 @@ export const NavbarActions = () => {
 
   const allProfiles: AuthUserRole[] = userRoles;
 
-  const handleSelectPerfil = (perfil: AuthUserRole) => {
-    setActiveProfile(perfil);
-    setStoredActiveRoleId(perfil.id);
-    setProfilesOpen(false);
+  const handleSelectPerfil = async (perfil: AuthUserRole) => {
+    if (!user || perfil.id === activeProfile?.id) {
+      setProfilesOpen(false);
+      return;
+    }
+    setSwitchingProfile(true);
+    try {
+      await patchMePerfilActivoRequest(perfil.id);
+      clearModulesSession();
+      await fetchMe();
+      setActiveProfile(perfil);
+      setProfilesOpen(false);
+    } finally {
+      setSwitchingProfile(false);
+    }
   };
 
   const initials = getUserInitials(user?.primer_nombre, user?.primer_apellido);
@@ -323,7 +344,8 @@ export const NavbarActions = () => {
                 return (
                   <MenuItem
                     key={perfil.id}
-                    onClick={() => handleSelectPerfil(perfil)}
+                    disabled={switchingProfile}
+                    onClick={() => void handleSelectPerfil(perfil)}
                     sx={{
                       py: 1.05,
                       pl: 1.2,

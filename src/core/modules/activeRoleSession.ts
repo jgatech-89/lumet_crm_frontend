@@ -24,6 +24,17 @@ export function setStoredActiveRoleId(roleId: number | undefined): void {
   window.dispatchEvent(new CustomEvent(ACTIVE_ROLE_CHANGED_EVENT, { detail: { roleId } }));
 }
 
+/** Tras /auth/me o login: alinear caché local con el perfil activo persistido en servidor. */
+export function syncActiveRoleFromServerUser(user: { perfil_activo_id?: number | null; perfil_activo?: { id: number } | null } | null): void {
+  if (typeof window === "undefined") return;
+  const rid = user?.perfil_activo_id ?? user?.perfil_activo?.id;
+  if (rid !== undefined && rid !== null && Number.isInteger(rid) && rid > 0) {
+    setStoredActiveRoleId(rid);
+  } else {
+    setStoredActiveRoleId(undefined);
+  }
+}
+
 export function subscribeActiveRoleChanges(handler: (roleId: number | undefined) => void): () => void {
   if (typeof window === "undefined") {
     return () => undefined;

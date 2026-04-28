@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getRequestErrorMessage } from "@/core/api/client";
+import { useAuth } from "@/core/auth/useAuth";
 import { useSnackbar } from "@/shared/context/SnackbarContext";
 import { createPersonaRequest, deletePersonaRequest, listPersonasRequest, updatePersonaRequest } from "@/modules/persona/api/personaApi";
 import { PERSONA_ROWS_PER_PAGE } from "@/modules/persona/constants/personaSeedData";
@@ -8,6 +9,7 @@ import { parsePersonaSummaryToFormValues, personaRolesFromSummary } from "@/modu
 
 export function usePersonaPage() {
   const { showSuccess, showError } = useSnackbar();
+  const { user, fetchMe } = useAuth();
   const [personas, setPersonas] = useState<PersonaSummary[]>([]);
   const [isListLoading, setIsListLoading] = useState(true);
   const [isListRefreshing, setIsListRefreshing] = useState(false);
@@ -187,6 +189,9 @@ export function usePersonaPage() {
           await createPersonaRequest(payload);
         }
         setPersonas(await listPersonasRequest());
+        if (payload.id && user && String(user.id) === payload.id) {
+          await fetchMe();
+        }
         showSuccess(payload.id ? "Persona actualizada correctamente." : "Persona creada correctamente.");
         setModalOpen(false);
         setEditingPersona(null);
@@ -197,7 +202,7 @@ export function usePersonaPage() {
         setIsListRefreshing(false);
       }
     },
-    [showSuccess, showError, validatePersonaPayload],
+    [showSuccess, showError, validatePersonaPayload, fetchMe, user],
   );
 
   return {
