@@ -66,7 +66,7 @@ export function ValorGenericaModal({
             ? "Completa los campos que necesites."
             : "Completa los campos que necesites para actualizar el valor."
       }
-      maxWidth="xs"
+      maxWidth="sm"
       fullWidth
       disableBackdropClose={saving}
       actionLoading={saving}
