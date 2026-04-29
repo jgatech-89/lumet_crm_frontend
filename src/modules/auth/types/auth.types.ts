@@ -25,8 +25,7 @@ export interface AuthUser {
   correo_auth: string | null;
   telefono: string | null;
   roles: AuthUserRole[];
-  perfil_activo_id: number | null;
-  perfil_activo: AuthUserRole | null;
+  perfil: AuthUserRole | null;
   estado: string;
   verificado: boolean;
 }

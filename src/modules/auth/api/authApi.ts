@@ -41,13 +41,6 @@ export async function fetchMeRequest(): Promise<ApiResponse<AuthUser>> {
   return data;
 }
 
-export async function patchMePerfilActivoRequest(perfilActivoId: number): Promise<ApiResponse<AuthUser>> {
-  const { data } = await apiClient.patch<ApiResponse<AuthUser>>(`${AUTH_PREFIX}/me/`, {
-    perfil_activo_id: perfilActivoId,
-  });
-  return data;
-}
-
 export async function forgotPasswordRequest(
   body: ForgotPasswordRequestPayload,
 ): Promise<ApiResponse<CorreoAuthResponse>> {

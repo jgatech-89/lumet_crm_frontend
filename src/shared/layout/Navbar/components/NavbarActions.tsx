@@ -23,8 +23,8 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import type { AuthUser, AuthUserRole } from "@/modules/auth/types/auth.types";
-import { getStoredActiveRoleId, setStoredActiveRoleId } from "@/core/modules/activeRoleSession";
-import { patchMePerfilActivoRequest } from "@/modules/auth/api/authApi";
+import { getStoredActiveRoleId, setStoredActiveRoleId } from "@/core/modules/activePerfilSession";
+import { fetchMeProfilesRequest, patchMeProfileRequest } from "@/core/modules/api/profileApi";
 import { clearModulesSession } from "@/core/modules/modulesSession";
 import { useAuth } from "@/core/auth/useAuth";
 import { useThemeMode } from "@/core/theme";
@@ -36,7 +36,6 @@ const getUserInitials = (
 ) => {
   const firstInitial = firstName?.trim()[0]?.toUpperCase() ?? "";
   const lastInitial = lastName?.trim()[0]?.toUpperCase() ?? "";
-
   if (!firstInitial && !lastInitial) return "U";
   if (!lastInitial) return firstInitial;
   return `${firstInitial}${lastInitial}`;
@@ -50,14 +49,17 @@ const avatarStyles = {
 
 function resolveActiveRole(user: AuthUser | null, roles: AuthUserRole[]): AuthUserRole | null {
   if (!roles.length) return null;
-  const serverId = user?.perfil_activo_id ?? user?.perfil_activo?.id;
+  const serverId = user?.perfil?.id;
   if (serverId !== undefined && serverId !== null) {
     const match = roles.find((role) => role.id === serverId);
     if (match) return match;
   }
   const storedId = getStoredActiveRoleId();
-  if (storedId === undefined) return roles[0];
-  return roles.find((role) => role.id === storedId) ?? roles[0];
+  if (storedId !== undefined) {
+    const stored = roles.find((role) => role.id === storedId);
+    if (stored) return stored;
+  }
+  return roles[0];
 }
 
 export const NavbarActions = () => {
@@ -65,29 +67,50 @@ export const NavbarActions = () => {
     useNavbar();
   const { user, logout, fetchMe } = useAuth();
   const { mode, toggleMode } = useThemeMode();
-  const userRoles = user?.roles ?? [];
-
-  const [activeProfile, setActiveProfile] = useState<AuthUserRole | null>(
-    () => resolveActiveRole(user, userRoles),
-  );
+  const [profiles, setProfiles] = useState<AuthUserRole[]>([]);
+  const [activeProfile, setActiveProfile] = useState<AuthUserRole | null>(null);
   const [profilesOpen, setProfilesOpen] = useState(false);
   const [switchingProfile, setSwitchingProfile] = useState(false);
 
-  // Sincronizar perfil activo cuando cambian los roles o el perfil persistido en servidor.
+  // Sincronizar perfil activo desde la data local de perfiles.
   useEffect(() => {
-    const resolved = resolveActiveRole(user, userRoles);
+    const resolved = resolveActiveRole(user, profiles);
     setActiveProfile(resolved);
     if (resolved?.id !== undefined) {
       setStoredActiveRoleId(resolved.id);
     }
-  }, [user, userRoles]);
+  }, [user, profiles]);
 
   // Cerrar la lista de perfiles al cerrar el menú principal
   useEffect(() => {
     if (!isMenuOpen) setProfilesOpen(false);
   }, [isMenuOpen]);
 
-  const allProfiles: AuthUserRole[] = userRoles;
+  // Solo depende de `isMenuOpen`: incluir `user` duplicaba GET /perfiles/ tras cada fetchMe con el menú abierto.
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    let mounted = true;
+    (async () => {
+      const resp = await fetchMeProfilesRequest();
+      if (!mounted) return;
+      const payload = resp.data;
+      const perfiles = payload?.perfiles ?? [];
+      setProfiles(perfiles);
+      const serverId = payload?.perfil?.id ?? null;
+      const resolved =
+        (serverId !== null ? perfiles.find((role) => role.id === serverId) : null) ??
+        resolveActiveRole(user, perfiles);
+      setActiveProfile(resolved);
+      if (resolved?.id !== undefined) {
+        setStoredActiveRoleId(resolved.id);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [isMenuOpen]);
+
+  const allProfiles: AuthUserRole[] = profiles;
 
   const handleSelectPerfil = async (perfil: AuthUserRole) => {
     if (!user || perfil.id === activeProfile?.id) {
@@ -96,10 +119,14 @@ export const NavbarActions = () => {
     }
     setSwitchingProfile(true);
     try {
-      await patchMePerfilActivoRequest(perfil.id);
+      const resp = await patchMeProfileRequest(perfil.id);
+      const payload = resp.data;
       clearModulesSession();
-      await fetchMe();
-      setActiveProfile(perfil);
+      const me = await fetchMe();
+      setProfiles(payload?.perfiles ?? []);
+      const persistedPerfil = me.perfil ?? payload?.perfil ?? perfil;
+      setStoredActiveRoleId(persistedPerfil.id);
+      setActiveProfile(persistedPerfil);
       setProfilesOpen(false);
     } finally {
       setSwitchingProfile(false);

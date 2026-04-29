@@ -9,7 +9,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 import type { ApiResponse } from "@/core/api/types";
-import { syncActiveRoleFromServerUser } from "@/core/modules/activeRoleSession";
+import { syncActiveRoleFromServerUser } from "@/core/modules/activePerfilSession";
 import { fetchMeRequest } from "@/modules/auth/api/authApi";
 import type { AuthTokens, AuthUser } from "@/modules/auth/types/auth.types";
 
