@@ -104,6 +104,7 @@ const DEFAULT_VALUES: PersonaFormValues = {
   tipoIdentificacion: 'CC',
   numeroIdentificacion: '',
   correo: '',
+  correoAuth: '',
   telefono: '',
   roles: ['Administrador'],
   estado: 'Activo',
@@ -115,6 +116,7 @@ export const PersonaModal = ({ open, onClose, onSave, personaData }: Props) => {
   const {
     control,
     handleSubmit,
+    trigger,
     watch,
     reset,
     formState: { errors, isSubmitting },
@@ -165,6 +167,7 @@ export const PersonaModal = ({ open, onClose, onSave, personaData }: Props) => {
       tipoIdentificacion: values.tipoIdentificacion,
       numeroIdentificacion: values.numeroIdentificacion.trim(),
       correo: values.correo.trim().toLowerCase(),
+      correoAuth: values.correoAuth.trim().toLowerCase(),
       telefono: normalizedPhone,
       roles: values.roles,
       estado: values.estado,
@@ -409,7 +412,51 @@ export const PersonaModal = ({ open, onClose, onSave, personaData }: Props) => {
                 },
               }}
               render={({ field }) => (
-                <FormControl fullWidth error={!!errors.telefono} size="small" sx={{ position: 'relative' }}>
+                <FormControl
+                  fullWidth
+                  error={!!errors.telefono}
+                  size="small"
+                  sx={{
+                    position: 'relative',
+                    '& .react-tel-input .form-control': {
+                      width: '100% !important',
+                      height: '40px',
+                      borderRadius: '8px',
+                      border: '1px solid',
+                      borderColor: errors.telefono ? 'error.main' : 'divider',
+                      backgroundColor: 'background.default',
+                      color: 'text.primary',
+                      fontSize: '0.9rem',
+                      fontWeight: 400,
+                      paddingLeft: '52px',
+                      boxShadow: 'none',
+                      transition: 'border-color 0.2s ease',
+                    },
+                    '& .react-tel-input .form-control:hover': {
+                      borderColor: errors.telefono ? 'error.main' : 'primary.main',
+                    },
+                    '& .react-tel-input .form-control:focus': {
+                      borderColor: errors.telefono ? 'error.main' : 'primary.main',
+                      boxShadow: 'none',
+                    },
+                    '& .react-tel-input .flag-dropdown': {
+                      height: '40px',
+                      borderTopLeftRadius: '8px',
+                      borderBottomLeftRadius: '8px',
+                      border: '1px solid',
+                      borderColor: errors.telefono ? 'error.main' : 'divider',
+                      backgroundColor: 'background.default',
+                    },
+                    '& .react-tel-input .selected-flag:hover, & .react-tel-input .selected-flag:focus': {
+                      backgroundColor: 'transparent',
+                    },
+                    '& .react-tel-input .country-list': {
+                      backgroundColor: 'background.paper',
+                      color: 'text.primary',
+                      borderColor: 'divider',
+                    },
+                  }}
+                >
                   <InputLabel
                     shrink
                     sx={{
@@ -430,23 +477,9 @@ export const PersonaModal = ({ open, onClose, onSave, personaData }: Props) => {
                     country="co"
                     value={(field.value ?? '').replace(/^\+/, '')}
                     onChange={(value) => field.onChange(value ? `+${value}` : '')}
-                    inputStyle={{
-                      width: '100%',
-                      height: '40px',
-                      borderRadius: '8px',
-                      border: `1px solid ${errors.telefono ? 'var(--mui-palette-error-main)' : 'var(--mui-palette-divider)'}`,
-                      backgroundColor: 'var(--mui-palette-background-default)',
-                      fontSize: '0.9rem',
-                      fontWeight: 400,
-                      paddingLeft: '52px',
-                    }}
-                    buttonStyle={{
-                      height: '40px',
-                      borderTopLeftRadius: '8px',
-                      borderBottomLeftRadius: '8px',
-                      border: `1px solid ${errors.telefono ? 'var(--mui-palette-error-main)' : 'var(--mui-palette-divider)'}`,
-                      backgroundColor: 'var(--mui-palette-background-default)',
-                    }}
+                    containerStyle={{ width: '100%' }}
+                    inputStyle={{ width: '100%' }}
+                    buttonStyle={{}}
                     dropdownStyle={{ zIndex: 1600 }}
                     enableSearch
                     countryCodeEditable={false}
@@ -456,6 +489,41 @@ export const PersonaModal = ({ open, onClose, onSave, personaData }: Props) => {
                     {errors.telefono?.message ?? ''}
                   </FormHelperText>
                 </FormControl>
+              )}
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <Controller
+              name="correoAuth"
+              control={control}
+              rules={{
+                required: "El correo auth es obligatorio",
+                validate: (value) => {
+                  const normalized = (value ?? "").trim();
+                  if (!normalized) return "El correo auth es obligatorio";
+                  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized) || "Ingresa un correo auth válido";
+                },
+              }}
+              render={({ field }) => (
+                <CustomInput
+                  {...field}
+                  onChange={(event) => {
+                    field.onChange(event);
+                    void trigger("correoAuth");
+                  }}
+                  onBlur={() => {
+                    field.onBlur();
+                    void trigger("correoAuth");
+                  }}
+                  fullWidth
+                  size="small"
+                  label="Correo auth"
+                  placeholder="auth@lumet.pro"
+                  slotProps={{ inputLabel: { shrink: true } }}
+                  error={!!errors.correoAuth}
+                  helperText={errors.correoAuth?.message ? String(errors.correoAuth.message) : ""}
+                />
               )}
             />
           </Grid>

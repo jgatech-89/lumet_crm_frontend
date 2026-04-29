@@ -37,6 +37,7 @@ export interface PersonaSummary {
   roles?: RolPersona[];
   rol?: RolPersona;
   email: string;
+  correoAuth: string;
   telefono: string;
   estado: EstadoPersona;
   sourceApi?: PersonaApiDto;
@@ -51,6 +52,7 @@ export interface PersonaFormValues {
   tipoIdentificacion: TipoIdentificacion;
   numeroIdentificacion: string;
   correo: string;
+  correoAuth: string;
   telefono: string;
   roles: RolPersona[];
   estado: EstadoPersona;
@@ -66,6 +68,7 @@ export interface PersonaPayload {
   tipoIdentificacion: TipoIdentificacion;
   numeroIdentificacion: string;
   correo: string;
+  correoAuth: string;
   telefono: string;
   roles: RolPersona[];
   estado: EstadoPersona;

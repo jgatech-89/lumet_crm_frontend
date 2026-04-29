@@ -169,30 +169,35 @@ export const PersonaDetailModal = ({ open, onClose, onExited, onEdit, personaDat
                 {personaData.nombre}
               </Typography>
 
-              <Stack direction="row" spacing={0.75} useFlexGap flexWrap="wrap" alignItems="center">
-                <Box
-                  sx={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    bgcolor: (theme) => alpha(theme.palette.info.main, theme.palette.mode === "dark" ? 0.24 : 0.14),
-                    color: 'info.main',
-                    px: 1,
-                    py: 0.3,
-                    borderRadius: 999,
-                    fontSize: '0.66rem',
-                    fontWeight: 700,
-                  }}
-                >
-                  {personaData.estado}
-                </Box>
-                {rolesForDisplay.map((role, index) => (
-                  <Box key={`${role}-${index}`} component="span" sx={getPersonaRoleChipSx(role)}>
-                    {role}
+              <Stack spacing={0.75}>
+                <Stack direction="row" spacing={0.75} useFlexGap flexWrap="wrap" alignItems="center">
+                  <Box
+                    sx={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      bgcolor: (theme) => alpha(theme.palette.info.main, theme.palette.mode === "dark" ? 0.24 : 0.14),
+                      color: 'info.main',
+                      px: 1,
+                      py: 0.3,
+                      borderRadius: 999,
+                      fontSize: '0.66rem',
+                      fontWeight: 700,
+                    }}
+                  >
+                    {personaData.estado}
                   </Box>
-                ))}
-                <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary', fontWeight: 500 }}>
-                  ID: {personaData.idDocumento.replace(':', '')}
-                </Typography>
+                  <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary', fontWeight: 500 }}>
+                    ID: {personaData.idDocumento.replace(':', '')}
+                  </Typography>
+                </Stack>
+
+                <Stack direction="row" spacing={0.75} useFlexGap flexWrap="wrap" alignItems="center">
+                  {rolesForDisplay.map((role, index) => (
+                    <Box key={`${role}-${index}`} component="span" sx={getPersonaRoleChipSx(role)}>
+                      {role}
+                    </Box>
+                  ))}
+                </Stack>
               </Stack>
             </Box>
           </Box>
@@ -228,6 +233,19 @@ export const PersonaDetailModal = ({ open, onClose, onExited, onEdit, personaDat
                         </Typography>
                         <Typography sx={{ fontSize: '1rem', fontWeight: 600, color: 'text.primary', wordBreak: 'break-word' }}>
                           {personaData.email}
+                        </Typography>
+                      </Box>
+                    </Stack>
+                  </Grid>
+                  <Grid size={{ xs: 12 }}>
+                    <Stack direction="row" spacing={1.25} alignItems="flex-start">
+                      <EmailOutlined sx={{ fontSize: '1.05rem', color: 'primary.main', mt: 0.2 }} />
+                      <Box>
+                        <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.08em', color: 'text.secondary', textTransform: 'uppercase', mb: 0.45 }}>
+                          Correo auth
+                        </Typography>
+                        <Typography sx={{ fontSize: '1rem', fontWeight: 600, color: 'text.primary', wordBreak: 'break-word' }}>
+                          {personaData.correoAuth || 'No disponible'}
                         </Typography>
                       </Box>
                     </Stack>
