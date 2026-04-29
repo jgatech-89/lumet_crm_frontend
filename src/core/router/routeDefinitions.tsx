@@ -1,6 +1,5 @@
 import type { ReactElement } from "react";
 import { Navigate } from "react-router-dom";
-
 import { HomePage } from "@/modules/home/pages/HomePage";
 import { LoginPage } from "@/modules/auth/pages/LoginPage";
 

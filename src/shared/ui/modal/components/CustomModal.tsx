@@ -11,11 +11,20 @@ import {
   type Theme,
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
+import { alpha } from '@mui/material/styles';
 import { isValidElement } from 'react';
 
 import { StyledDialog } from '../styles/CustomModal.styles';
+import {
+  modalDialogContentLinearLoadingSx,
+  modalLinearLoaderActionTopWrapSx,
+  modalLinearLoaderContentBodySx,
+  modalLinearLoaderOverlayInnerSx,
+  modalLinearLoaderOverlayOuterSx,
+} from '../styles/modalContentLoading.styles';
 import { CustomModalProps } from '../types/CustomModal.types';
 import { AppSkeleton, LinearLoader } from '@/shared/ui/loading';
+import { linearLoaderInModalNarrowSx } from '@/shared/ui/loading/styles/linearLoader.styles';
 
 type PaperSlotProp = NonNullable<NonNullable<CustomModalProps['slotProps']>['paper']>;
 type PaperOwnerState = PaperSlotProp extends (ownerState: infer T) => unknown ? T : never;
@@ -79,10 +88,11 @@ export const CustomModal = ({
   disableBackdropClose = false,
   contentSx,
   actionsSx,
-  bottomBorderColor = '#1E88E5',
+  bottomBorderColor,
   ...dialogProps
 }: CustomModalProps) => {
   const theme = useTheme();
+  const resolvedBottomBorderColor = bottomBorderColor ?? theme.palette.primary.main;
   const isMobileViewport = useMediaQuery(theme.breakpoints.down('sm'));
 
   const handleDialogClose = (_: unknown, reason: string) => {
@@ -121,7 +131,7 @@ export const CustomModal = ({
 
     return [
       {
-        borderBottom: `4px solid ${bottomBorderColor}`,
+        borderBottom: `4px solid ${resolvedBottomBorderColor}`,
         '&::after': {
           content: '""',
           position: 'absolute',
@@ -129,7 +139,7 @@ export const CustomModal = ({
           right: 0,
           bottom: 0,
           height: '4px',
-          backgroundColor: bottomBorderColor,
+          backgroundColor: resolvedBottomBorderColor,
           pointerEvents: 'none',
         },
       },
@@ -179,7 +189,7 @@ export const CustomModal = ({
           overflow: 'hidden',
           '& .MuiBackdrop-root': {
             backdropFilter: 'blur(8px)',
-            backgroundColor: 'rgba(15, 23, 42, 0.56)',
+            backgroundColor: alpha(theme.palette.background.default, theme.palette.mode === "dark" ? 0.72 : 0.56),
           },
           '& .MuiDialog-container': {
             alignItems: 'flex-end',
@@ -229,7 +239,7 @@ export const CustomModal = ({
   const mergedDialogSx = [
     {
       '& .MuiBackdrop-root': {
-        backgroundColor: 'rgba(15, 23, 42, 0.56)',
+        backgroundColor: alpha(theme.palette.background.default, theme.palette.mode === "dark" ? 0.72 : 0.56),
       },
     },
     ...(mobileSheetSx ? [mobileSheetSx] : []),
@@ -269,7 +279,7 @@ export const CustomModal = ({
               width: 42,
               height: 5,
               borderRadius: 999,
-              bgcolor: '#CBD5E1',
+              bgcolor: (theme) => alpha(theme.palette.text.primary, theme.palette.mode === "dark" ? 0.32 : 0.2),
             }}
           />
         </Box>
@@ -335,16 +345,21 @@ export const CustomModal = ({
               mt: 1.25,
             },
           },
+          contentLoading && contentLoadingVariant === 'linear' ? modalDialogContentLinearLoadingSx : {},
           ...(contentSx ? (Array.isArray(contentSx) ? contentSx : [contentSx]) : []),
         ]}
       >
         {actionLoading && actionLoadingMode === 'top' ? (
-          <LinearLoader label={actionLoadingLabel} sx={{ mb: 1.5 }} />
+          <Box sx={modalLinearLoaderActionTopWrapSx}>
+            <LinearLoader label={actionLoadingLabel} sx={linearLoaderInModalNarrowSx} />
+          </Box>
         ) : null}
 
         {contentLoading ? (
           contentLoadingVariant === 'linear' ? (
-            <LinearLoader label={contentLoadingLabel} />
+            <Box sx={modalLinearLoaderContentBodySx}>
+              <LinearLoader label={contentLoadingLabel} sx={linearLoaderInModalNarrowSx} />
+            </Box>
           ) : (
             <AppSkeleton rows={contentSkeletonRows} showHeader={false} />
           )
@@ -365,21 +380,9 @@ export const CustomModal = ({
       )}
 
       {actionLoading && actionLoadingMode === 'overlay' ? (
-        <Box
-          sx={{
-            position: 'absolute',
-            inset: 0,
-            zIndex: 7,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            px: { xs: 2, sm: 3 },
-            bgcolor: 'rgba(255, 255, 255, 0.78)',
-            backdropFilter: 'blur(2px)',
-          }}
-        >
-          <Box sx={{ width: 'min(460px, 100%)' }}>
-            <LinearLoader label={actionLoadingLabel} />
+        <Box sx={modalLinearLoaderOverlayOuterSx}>
+          <Box sx={modalLinearLoaderOverlayInnerSx}>
+            <LinearLoader label={actionLoadingLabel} sx={linearLoaderInModalNarrowSx} />
           </Box>
         </Box>
       ) : null}

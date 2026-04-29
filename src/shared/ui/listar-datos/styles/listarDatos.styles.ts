@@ -58,6 +58,11 @@ export const listarDatosStyles = {
     textAlign: "center" as const,
     color: "text.secondary",
     fontSize: "0.875rem",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 160,
+    flex: 1,
   } satisfies SxProps<Theme>,
 
   skeletonItem: (dense: boolean) =>

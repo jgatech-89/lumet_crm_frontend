@@ -31,14 +31,7 @@ export function AppRouter() {
 
   const dynamicModules = useMemo(() => {
     const staticPaths = new Set(staticRouteDefinitions.map(({ path }) => path));
-
-    return allowedModules.filter((module) => {
-      if (staticPaths.has(module.path)) {
-        throw new Error(`La ruta dinamica ${module.path} entra en conflicto con una ruta estatica`);
-      }
-
-      return true;
-    });
+    return allowedModules.filter((module) => !staticPaths.has(module.path));
   }, [allowedModules]);
 
   if (authLoading || (isAuthenticated && modulesLoading)) {

@@ -1,5 +1,5 @@
 import { CustomModal } from "@/shared/ui/modal/components/CustomModal";
-import { CustomButton } from "@/shared/ui/buttons/components/CustomButton";
+import { CancelarBoton, GuardarBoton } from "@/shared/ui/buttons/components/BotonesAccionCrud";
 import { useValorGenericaForm } from "../hooks/useValorGenericaForm";
 import { ValorGenericaModalForm, VALOR_GENERICA_MODAL_FORM_ID } from "./ValorGenericaForm";
 import type { ValorGenericaDetail } from "../types/genericas.types";
@@ -66,7 +66,7 @@ export function ValorGenericaModal({
             ? "Completa los campos que necesites."
             : "Completa los campos que necesites para actualizar el valor."
       }
-      maxWidth="md"
+      maxWidth="sm"
       fullWidth
       disableBackdropClose={saving}
       actionLoading={saving}
@@ -75,39 +75,20 @@ export function ValorGenericaModal({
       contentLoadingVariant="linear"
       contentLoadingLabel="Cargando valor..."
       contentSx={{
-        px: { xs: 0.5, sm: 1 },
-        pt: { xs: 1.25, sm: 1.75 },
-        pb: 0.5,
+        px: { xs: 0.35, sm: 0.5 },
+        pt: { xs: 0.75, sm: 1 },
+        pb: 0,
       }}
+      actionsSx={{ bgcolor: "transparent", px: { xs: 1.25, sm: 1.5 }, pb: 1.1, mt: 0.15, pt: 0.35 }}
       actions={
         <>
-          <CustomButton
-            label="Cancelar"
-            variant="outlined"
-            onClick={handleClose}
-            disabled={saving}
-            sx={{
-              borderColor: "divider",
-              color: "text.secondary",
-              fontWeight: 500,
-              "&:hover": {
-                borderColor: "primary.light",
-                backgroundColor: "action.hover",
-                color: "text.primary",
-              },
-            }}
-          />
-          <CustomButton
+          <CancelarBoton onClick={handleClose} disabled={saving} />
+          <GuardarBoton
             label={mode === "create" ? "Guardar" : "Actualizar"}
-            variant="contained"
             type="submit"
             form={VALOR_GENERICA_MODAL_FORM_ID}
             loading={saving}
             disabled={formLocked}
-            sx={{
-              fontWeight: 600,
-              boxShadow: "0 8px 18px rgba(37,99,235,0.24)",
-            }}
           />
         </>
       }

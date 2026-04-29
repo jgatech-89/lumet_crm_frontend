@@ -1,5 +1,5 @@
 import { GenericaPage } from "@/modules/genericas/pages/GenericaPage";
-import { PersonasPage } from "@/modules/personas/pages/PersonasPage";
+import { PersonaPage } from "@/modules/persona/pages/PersonaPage";
 
 import type { AppModuleDefinition } from "./types";
 
@@ -41,7 +41,7 @@ export const modulesConfig = createModulesConfig([
     code: "personas",
     permissionCodes: ["personas_act"],
     path: "/personas",
-    element: PersonasPage,
+    element: PersonaPage,
   },
   {
     code: "genericas",

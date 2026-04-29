@@ -1,6 +1,6 @@
 import { Box, Typography } from "@mui/material";
 import { CustomModal } from "@/shared/ui/modal/components/CustomModal";
-import { CustomButton } from "@/shared/ui/buttons/components/CustomButton";
+import { CancelarBoton } from "@/shared/ui/buttons/components/BotonesAccionCrud";
 import { buildValorGenericaDetailRows } from "../utils/configValorGenericaDetail";
 import type { ValorGenericaDetail } from "../types/genericas.types";
 
@@ -33,23 +33,7 @@ export function ValorGenericaDetailModal({
       contentLoading={loading}
       contentLoadingVariant="linear"
       contentLoadingLabel="Cargando detalle..."
-      actions={
-        <CustomButton
-          label="Cerrar"
-          variant="outlined"
-          onClick={onClose}
-          sx={{
-            borderColor: "divider",
-            color: "text.secondary",
-            fontWeight: 500,
-            "&:hover": {
-              borderColor: "primary.light",
-              backgroundColor: "action.hover",
-              color: "text.primary",
-            },
-          }}
-        />
-      }
+      actions={<CancelarBoton onClick={onClose} />}
     >
       {error ? (
         <Typography variant="body2" color="error" sx={{ px: 2.5, py: 2 }}>

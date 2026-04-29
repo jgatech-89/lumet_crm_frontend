@@ -1,7 +1,10 @@
+import { alpha } from "@mui/material/styles";
+
 export const linearLoaderProgressSx = {
   height: 6,
   borderRadius: 999,
-  bgcolor: 'rgba(30, 136, 229, 0.15)',
+  bgcolor: (theme: { palette: { mode: string; primary: { main: string } } }) =>
+    alpha(theme.palette.primary.main, theme.palette.mode === "dark" ? 0.3 : 0.15),
   '& .MuiLinearProgress-bar': {
     borderRadius: 999,
   },
@@ -18,4 +21,11 @@ export const fullPageLoaderContainerSx = {
 
 export const skeletonRowSx = {
   borderRadius: 2,
+} as const;
+
+export const skeletonToneSx = {
+  "& .MuiSkeleton-root": {
+    bgcolor: (theme: { palette: { mode: string; text: { primary: string } } }) =>
+      alpha(theme.palette.text.primary, theme.palette.mode === "dark" ? 0.24 : 0.1),
+  },
 } as const;

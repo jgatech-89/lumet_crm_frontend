@@ -22,17 +22,13 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import type { AuthUserPerfil } from "@/modules/auth/types/auth.types";
+import type { AuthUser, AuthUserRole } from "@/modules/auth/types/auth.types";
+import { getStoredActiveRoleId, setStoredActiveRoleId } from "@/core/modules/activePerfilSession";
+import { fetchMeProfilesRequest, patchMeProfileRequest } from "@/core/modules/api/profileApi";
+import { clearModulesSession } from "@/core/modules/modulesSession";
 import { useAuth } from "@/core/auth/useAuth";
 import { useThemeMode } from "@/core/theme";
 import { useNavbar } from "../hooks/useNavbar";
-
-// ─── Mock: reemplazar con GET /personas/{id}/perfiles/ cuando el backend esté listo ──
-const MOCK_PERFILES_ADICIONALES: AuthUserPerfil[] = [
-  { id: 2, nombre: "Vendedor", codigo: "VENDEDOR" },
-  { id: 3, nombre: "Soporte Técnico", codigo: "SOPORTE" },
-];
-// ─────────────────────────────────────────────────────────────────────────────────────
 
 const getUserInitials = (
   firstName: string | null | undefined,
@@ -40,7 +36,6 @@ const getUserInitials = (
 ) => {
   const firstInitial = firstName?.trim()[0]?.toUpperCase() ?? "";
   const lastInitial = lastName?.trim()[0]?.toUpperCase() ?? "";
-
   if (!firstInitial && !lastInitial) return "U";
   if (!lastInitial) return firstInitial;
   return `${firstInitial}${lastInitial}`;
@@ -52,39 +47,90 @@ const avatarStyles = {
   fontWeight: 600,
 };
 
+function resolveActiveRole(user: AuthUser | null, roles: AuthUserRole[]): AuthUserRole | null {
+  if (!roles.length) return null;
+  const serverId = user?.perfil?.id;
+  if (serverId !== undefined && serverId !== null) {
+    const match = roles.find((role) => role.id === serverId);
+    if (match) return match;
+  }
+  const storedId = getStoredActiveRoleId();
+  if (storedId !== undefined) {
+    const stored = roles.find((role) => role.id === storedId);
+    if (stored) return stored;
+  }
+  return roles[0];
+}
+
 export const NavbarActions = () => {
   const { anchorEl, handleMenuOpen, handleMenuClose, isMenuOpen } =
     useNavbar();
-  const { user, logout } = useAuth();
+  const { user, logout, fetchMe } = useAuth();
   const { mode, toggleMode } = useThemeMode();
-
-  const [activeProfile, setActiveProfile] = useState<AuthUserPerfil | null>(
-    user?.perfil ?? null,
-  );
+  const [profiles, setProfiles] = useState<AuthUserRole[]>([]);
+  const [activeProfile, setActiveProfile] = useState<AuthUserRole | null>(null);
   const [profilesOpen, setProfilesOpen] = useState(false);
+  const [switchingProfile, setSwitchingProfile] = useState(false);
 
-  // Sincronizar perfil activo cuando el usuario carga desde la API
+  // Sincronizar perfil activo desde la data local de perfiles.
   useEffect(() => {
-    if (user?.perfil) setActiveProfile(user.perfil);
-  }, [user?.perfil]);
+    const resolved = resolveActiveRole(user, profiles);
+    setActiveProfile(resolved);
+    if (resolved?.id !== undefined) {
+      setStoredActiveRoleId(resolved.id);
+    }
+  }, [user, profiles]);
 
   // Cerrar la lista de perfiles al cerrar el menú principal
   useEffect(() => {
     if (!isMenuOpen) setProfilesOpen(false);
   }, [isMenuOpen]);
 
-  const allProfiles: AuthUserPerfil[] = activeProfile
-    ? [
-        activeProfile,
-        ...MOCK_PERFILES_ADICIONALES.filter((p) => p.id !== activeProfile.id),
-      ]
-    : MOCK_PERFILES_ADICIONALES;
+  // Solo depende de `isMenuOpen`: incluir `user` duplicaba GET /perfiles/ tras cada fetchMe con el menú abierto.
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    let mounted = true;
+    (async () => {
+      const resp = await fetchMeProfilesRequest();
+      if (!mounted) return;
+      const payload = resp.data;
+      const perfiles = payload?.perfiles ?? [];
+      setProfiles(perfiles);
+      const serverId = payload?.perfil?.id ?? null;
+      const resolved =
+        (serverId !== null ? perfiles.find((role) => role.id === serverId) : null) ??
+        resolveActiveRole(user, perfiles);
+      setActiveProfile(resolved);
+      if (resolved?.id !== undefined) {
+        setStoredActiveRoleId(resolved.id);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [isMenuOpen]);
 
-  const handleSelectPerfil = (perfil: AuthUserPerfil) => {
-    // TODO: integración backend — llamar a POST /auth/switch-profile/ con { perfil_id: perfil.id }
-    // y actualizar user.perfil en AuthContext con la respuesta del servidor
-    setActiveProfile(perfil);
-    setProfilesOpen(false);
+  const allProfiles: AuthUserRole[] = profiles;
+
+  const handleSelectPerfil = async (perfil: AuthUserRole) => {
+    if (!user || perfil.id === activeProfile?.id) {
+      setProfilesOpen(false);
+      return;
+    }
+    setSwitchingProfile(true);
+    try {
+      const resp = await patchMeProfileRequest(perfil.id);
+      const payload = resp.data;
+      clearModulesSession();
+      const me = await fetchMe();
+      setProfiles(payload?.perfiles ?? []);
+      const persistedPerfil = me.perfil ?? payload?.perfil ?? perfil;
+      setStoredActiveRoleId(persistedPerfil.id);
+      setActiveProfile(persistedPerfil);
+      setProfilesOpen(false);
+    } finally {
+      setSwitchingProfile(false);
+    }
   };
 
   const initials = getUserInitials(user?.primer_nombre, user?.primer_apellido);
@@ -319,46 +365,55 @@ export const NavbarActions = () => {
               overflow: "hidden",
             }}
           >
-            {allProfiles.map((perfil) => {
-              const isActive = perfil.id === activeProfile?.id;
-              return (
-                <MenuItem
-                  key={perfil.id}
-                  onClick={() => handleSelectPerfil(perfil)}
-                  sx={{
-                    py: 1.05,
-                    pl: 1.2,
-                    mx: 0.7,
-                    my: 0.35,
-                    borderRadius: "10px !important",
-                    bgcolor: isActive ? `${alpha("#2563eb", 0.1)} !important` : "transparent !important",
-                    "&:hover": {
-                      bgcolor: (t) =>
-                        `${alpha(t.palette.primary.main, 0.1)} !important`,
-                    },
-                  }}
-                >
-                  <ListItemIcon sx={{ minWidth: 28 }}>
-                    {isActive ? (
-                      <CheckCircleIcon fontSize="small" sx={{ color: "primary.main" }} />
-                    ) : (
-                      <CheckCircleOutlineIcon fontSize="small" sx={{ color: "text.disabled" }} />
-                    )}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={perfil.nombre}
-                    slotProps={{
-                      primary: {
-                        variant: "body2",
-                        fontWeight: isActive ? 600 : 500,
-                        color: isActive ? "primary.main" : "text.primary",
-                        noWrap: true,
+            {allProfiles.length ? (
+              allProfiles.map((perfil) => {
+                const isActive = perfil.id === activeProfile?.id;
+                return (
+                  <MenuItem
+                    key={perfil.id}
+                    disabled={switchingProfile}
+                    onClick={() => void handleSelectPerfil(perfil)}
+                    sx={{
+                      py: 1.05,
+                      pl: 1.2,
+                      mx: 0.7,
+                      my: 0.35,
+                      borderRadius: "10px !important",
+                      bgcolor: isActive ? `${alpha("#2563eb", 0.1)} !important` : "transparent !important",
+                      "&:hover": {
+                        bgcolor: (t) =>
+                          `${alpha(t.palette.primary.main, 0.1)} !important`,
                       },
                     }}
-                  />
-                </MenuItem>
-              );
-            })}
+                  >
+                    <ListItemIcon sx={{ minWidth: 28 }}>
+                      {isActive ? (
+                        <CheckCircleIcon fontSize="small" sx={{ color: "primary.main" }} />
+                      ) : (
+                        <CheckCircleOutlineIcon fontSize="small" sx={{ color: "text.disabled" }} />
+                      )}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={perfil.nombre}
+                      slotProps={{
+                        primary: {
+                          variant: "body2",
+                          fontWeight: isActive ? 600 : 500,
+                          color: isActive ? "primary.main" : "text.primary",
+                          noWrap: true,
+                        },
+                      }}
+                    />
+                  </MenuItem>
+                );
+              })
+            ) : (
+              <Box sx={{ px: 2, py: 1.2 }}>
+                <Typography variant="body2" color="text.secondary">
+                  No tienes perfiles asignados.
+                </Typography>
+              </Box>
+            )}
           </Box>
         </Collapse>
 

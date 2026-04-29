@@ -108,10 +108,12 @@ export function normalizeAxiosError(error: AxiosError): ApiRequestError | AxiosE
 
 export function getRequestErrorMessage(error: unknown): string {
   if (isApiRequestError(error)) {
+    const first = error.errors?.find((e) => typeof e.message === "string" && e.message.trim().length > 0);
+    if (first?.message?.trim()) {
+      return first.message.trim();
+    }
     const trimmed = error.message?.trim();
     if (trimmed) return trimmed;
-    const first = error.errors?.find((e) => typeof e.message === "string");
-    if (first?.message?.trim()) return first.message.trim();
     return DEFAULT_ERROR_MESSAGE;
   }
   if (axios.isAxiosError(error)) {

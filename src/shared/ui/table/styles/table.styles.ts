@@ -67,7 +67,8 @@ export const tableStyles = {
   paginationButton: {
     border: "1px solid",
     borderColor: "divider",
-    background: "background.paper",
+    backgroundColor: "background.paper",
+    appearance: "none",
     color: "text.secondary",
     borderRadius: "10px",
     width: "34px",
@@ -87,7 +88,7 @@ export const tableStyles = {
   paginationButtonActive: {
     borderColor: "primary.main",
     backgroundColor: "primary.main",
-    color: "primary.contrastText",
+    color: "#111827",
     fontWeight: 600,
     boxShadow: (theme: { palette: { mode: string } }) =>
       theme.palette.mode === "dark"

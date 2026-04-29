@@ -1,9 +1,9 @@
-import { alpha, type SxProps, type Theme } from '@mui/material/styles';
+import type { SxProps, Theme } from '@mui/material/styles';
 import type { CustomButtonProps } from './types/CustomButton.types';
 
 type CustomButtonVariant = NonNullable<CustomButtonProps['variant']>;
 
-export type ButtonPresetKey = 'primary' | 'save' | 'cancel' | 'delete' | 'secondary';
+export type ButtonPresetKey = 'primary' | 'save' | 'edit' | 'cancel' | 'delete' | 'secondary';
 
 export interface ButtonPreset {
   variant: CustomButtonVariant;
@@ -46,31 +46,48 @@ export const BUTTON_PRESETS: Record<ButtonPresetKey, ButtonPreset> = {
       },
     }),
   },
-  cancel: {
-    variant: 'outlined',
+  edit: {
+    variant: 'contained',
     sx: (theme) => ({
-      color: 'text.primary',
-      backgroundColor: 'background.paper',
-      borderColor: 'divider',
-      borderRadius: (parseFloat(String(theme.shape.borderRadius)) || 4) * 1.5,
+      borderRadius: (parseFloat(String(theme.shape.borderRadius)) || 4) * 3,
       px: 3,
       py: 1.1,
+      bgcolor: 'primary.main',
+      color: 'primary.contrastText',
+      fontWeight: 600,
+      boxShadow: 'none',
+      '&:hover': {
+        bgcolor: 'primary.dark',
+        boxShadow: theme.shadows[3],
+      },
+    }),
+  },
+  cancel: {
+    variant: 'text',
+    sx: (theme) => ({
+      color: 'text.secondary',
+      fontWeight: 500,
+      px: 1.5,
+      py: 0.75,
+      borderRadius: (parseFloat(String(theme.shape.borderRadius)) || 4) * 1.25,
       '&:hover': {
         backgroundColor: 'action.hover',
-        borderColor: theme.palette.text.disabled,
+        color: 'text.primary',
       },
     }),
   },
   delete: {
-    variant: 'outlined',
+    variant: 'contained',
     sx: (theme) => ({
-      color: 'error.main',
-      borderColor: 'error.main',
-      borderRadius: (parseFloat(String(theme.shape.borderRadius)) || 4) * 1.5,
+      borderRadius: (parseFloat(String(theme.shape.borderRadius)) || 4) * 3,
+      px: 3,
+      py: 1.1,
+      bgcolor: 'error.main',
+      color: 'common.white',
       fontWeight: 600,
+      boxShadow: 'none',
       '&:hover': {
-        borderColor: 'error.dark',
-        backgroundColor: alpha(theme.palette.error.main, 0.08),
+        bgcolor: 'error.dark',
       },
     }),
   },

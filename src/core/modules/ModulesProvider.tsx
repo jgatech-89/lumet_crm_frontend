@@ -3,6 +3,7 @@ import { useContext, useEffect, useMemo, useState, type ReactNode } from "react"
 import { useAuth } from "@/core/auth/useAuth";
 import { subscribeTokensCleared } from "@/core/auth/tokenStorage";
 
+import { setStoredActiveRoleId } from "./activePerfilSession";
 import { ModulesContext, type ModulesContextValue } from "./modulesContext";
 import { getModuleByCode } from "./modules.config";
 import { clearModulesSession, getModulesSession } from "./modulesSession";
@@ -60,8 +61,22 @@ export function ModulesProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     return subscribeTokensCleared(() => {
       clearModulesSession();
+      setStoredActiveRoleId(undefined);
     });
   }, []);
+
+  useEffect(() => {
+    if (authLoading) {
+      return;
+    }
+
+    if (perfilId === undefined) {
+      setStoredActiveRoleId(undefined);
+      return;
+    }
+
+    setStoredActiveRoleId(perfilId);
+  }, [authLoading, perfilId]);
 
   useEffect(() => {
     if (authLoading) {
