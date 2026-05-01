@@ -12,11 +12,15 @@ export interface ValorGenerica {
   created_at: string;
 }
 
-/** Fila de listado con permiso respecto a un `ValorGenerica` principal (`permiso` = id o 0). */
-export interface ValorGenericaConPermiso extends ValorGenerica {
-  permiso: number;
+export interface ValorGenericaListado extends ValorGenerica {
   valor_orden?: number | null;
   valora?: string | null;
+  generica?: number;
+  estado?: string;
+}
+
+export interface ValorGenericaConPermiso extends ValorGenericaListado {
+  permiso: number;
 }
 
 export interface ValorGenericaDetail {

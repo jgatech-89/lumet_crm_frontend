@@ -1,4 +1,5 @@
 import { apiClient } from "@/core/api/client";
+import { crearFormData } from "@/core/js/funciones.js";
 import type {
   Generica,
   ValorGenerica,
@@ -96,12 +97,7 @@ export async function createValorGenericaRequest(
 ): Promise<string> {
   const url = "/genericas/valores-genericas/";
   if (archivo) {
-    const fd = new FormData();
-    Object.entries(fields).forEach(([k, v]) => {
-      if (v === null || v === undefined) return;
-      fd.append(k, String(v));
-    });
-    fd.append("archivo", archivo);
+    const fd = crearFormData({ ...fields, archivo });
     const { data } = await apiClient.post<ApiResponse<void>>(url, fd);
     return data.message;
   }
@@ -113,12 +109,7 @@ export async function updateValorGenericaRequest(payload: UpdateValorGenericaPay
   const { id, fields, archivo } = payload;
   const url = `/genericas/valores-genericas/${id}/`;
   if (archivo) {
-    const fd = new FormData();
-    Object.entries(fields).forEach(([k, v]) => {
-      if (v === null || v === undefined) return;
-      fd.append(k, String(v));
-    });
-    fd.append("archivo", archivo);
+    const fd = crearFormData({ ...fields, archivo });
     const { data } = await apiClient.put<ApiResponse<void>>(url, fd);
     return data.message;
   }
