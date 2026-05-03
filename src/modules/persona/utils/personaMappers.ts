@@ -32,7 +32,10 @@ const ROL_A_PERFIL_CODIGO: Record<RolPersona, string> = {
   Cerrador: "cerrador",
 };
 
-function mapPerfilToRol(perfil: { nombre: string; codigo: string | null }): RolPersona | null {
+export function mapValorGenericaToRolPersona(perfil: {
+  nombre: string;
+  codigo: string | null;
+}): RolPersona | null {
   if (perfil.codigo) {
     const roleByCode = CODIGO_PERFIL_A_ROL[perfil.codigo.toLowerCase()];
     if (roleByCode) {
@@ -51,6 +54,17 @@ function estadoUiToApi(estado: EstadoPersona): string {
   return estado === "Activo" ? "1" : "0";
 }
 
+export function mapValorGenericaToTipoIdentificacion(valor: {
+  nombre: string;
+  codigo: string | null;
+}): TipoIdentificacion | null {
+  if (!valor.codigo) return null;
+  const u = valor.codigo.toUpperCase();
+  if (u === "PAS") return "PA";
+  if (u === "CC" || u === "CE" || u === "NIT" || u === "PA") return u as TipoIdentificacion;
+  return null;
+}
+
 export function tipoIdentificacionCodigoToUi(codigo: string | null): TipoIdentificacion {
   if (!codigo) return "CC";
   const u = codigo.toUpperCase();
@@ -67,7 +81,7 @@ function tipoUiToCodigoParaApi(tipo: TipoIdentificacion): string {
 export function mapPersonaApiToSummary(dto: PersonaApiDto): PersonaSummary {
   const tipoUi = tipoIdentificacionCodigoToUi(dto.tipo_identificacion.codigo);
   const roles = (dto.roles ?? [])
-    .map((perfil) => mapPerfilToRol(perfil))
+    .map((perfil) => mapValorGenericaToRolPersona(perfil))
     .filter((role): role is RolPersona => role !== null);
   const rolesFinal: RolPersona[] = roles.length ? roles : ["Comercial"];
   const rolPrincipal = rolesFinal[0];
@@ -90,7 +104,7 @@ export function mapPersonaApiToSummary(dto: PersonaApiDto): PersonaSummary {
 export function mapApiDtoToFormValues(dto: PersonaApiDto): PersonaFormValues {
   const tipoUi = tipoIdentificacionCodigoToUi(dto.tipo_identificacion.codigo);
   const roles = (dto.roles ?? [])
-    .map((perfil) => mapPerfilToRol(perfil))
+    .map((perfil) => mapValorGenericaToRolPersona(perfil))
     .filter((role): role is RolPersona => role !== null);
   const rolesFinal: RolPersona[] = roles.length ? roles : ["Comercial"];
 

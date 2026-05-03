@@ -17,8 +17,9 @@ import {
 import { parsePhoneNumberFromString } from 'libphonenumber-js';
 import { CancelarBoton, EditarBoton } from '@/shared/ui/buttons/components/BotonesAccionCrud';
 import { CustomModal } from '@/shared/ui/modal/components/CustomModal';
-import { getPersonaRoleChipSx } from '@/modules/persona/styles/personaPageStyles';
-import type { PersonaSummary, RolPersona } from '@/modules/persona/types/persona.types';
+import { getPersonaAvatarSxFromValora, getPersonaRoleChipSxFromValora } from '@/modules/persona/styles/personaPageStyles';
+import type { SxProps, Theme } from '@mui/material/styles';
+import type { PersonaRolOption, PersonaSummary, RolPersona } from '@/modules/persona/types/persona.types';
 import { getPersonaDisplayInitials, personaRolesFromSummary } from '@/modules/persona/utils/personaMappers';
 
 interface Props {
@@ -27,15 +28,8 @@ interface Props {
   onExited?: () => void;
   onEdit: (persona: PersonaSummary) => void;
   personaData: PersonaSummary | null;
+  rolOpciones: PersonaRolOption[];
 }
-
-const roleStyles: Record<RolPersona, { bg: string; color: string }> = {
-  Administrador: { bg: '#ECEFF1', color: '#455A64' },
-  Usuario: { bg: '#F3E5F5', color: '#6A1B9A' },
-  Supervisor: { bg: '#E3F2FD', color: '#1E88E5' },
-  Comercial: { bg: '#E8F5E9', color: '#2E7D32' },
-  Cerrador: { bg: '#FFF3E0', color: '#EF6C00' },
-};
 
 const parseDocument = (documentValue: string) => {
   const [type = 'CC', number = ''] = documentValue.split(':');
@@ -101,15 +95,15 @@ const DetailField = ({ label, value }: { label: string; value: string }) => (
   </Box>
 );
 
-export const PersonaDetailModal = ({ open, onClose, onExited, onEdit, personaData }: Props) => {
+export const PersonaDetailModal = ({ open, onClose, onExited, onEdit, personaData, rolOpciones }: Props) => {
   const resolvedRoles = personaData ? personaRolesFromSummary(personaData) : [];
   const rolesForDisplay: RolPersona[] = resolvedRoles.length ? resolvedRoles : ['Comercial'];
   const mainRole = personaData
     ? (personaData.rolPrincipal ?? personaData.roles?.[0] ?? personaData.rol ?? 'Comercial')
     : 'Supervisor';
+  const mainValora = rolOpciones.find((o) => o.value === mainRole)?.valora;
   const initials = getPersonaDisplayInitials(personaData?.nombre ?? '');
   const documentInfo = parseDocument(personaData?.idDocumento ?? '');
-  const roleStyle = roleStyles[mainRole];
 
   return (
     <CustomModal
@@ -151,15 +145,18 @@ export const PersonaDetailModal = ({ open, onClose, onExited, onEdit, personaDat
             }}
           >
             <Avatar
-              sx={{
-                width: { xs: 60, sm: 68 },
-                height: { xs: 60, sm: 68 },
-                bgcolor: roleStyle.bg,
-                color: roleStyle.color,
-                fontWeight: 700,
-                fontSize: { xs: '1rem', sm: '1.1rem' },
-                flexShrink: 0,
-              }}
+              sx={
+                [
+                  getPersonaAvatarSxFromValora(mainValora),
+                  {
+                    width: { xs: 60, sm: 68 },
+                    height: { xs: 60, sm: 68 },
+                    fontWeight: 700,
+                    fontSize: { xs: '1rem', sm: '1.1rem' },
+                    flexShrink: 0,
+                  },
+                ] as SxProps<Theme>
+              }
             >
               {initials}
             </Avatar>
@@ -193,7 +190,11 @@ export const PersonaDetailModal = ({ open, onClose, onExited, onEdit, personaDat
 
                 <Stack direction="row" spacing={0.75} useFlexGap flexWrap="wrap" alignItems="center">
                   {rolesForDisplay.map((role, index) => (
-                    <Box key={`${role}-${index}`} component="span" sx={getPersonaRoleChipSx(role)}>
+                    <Box
+                      key={`${role}-${index}`}
+                      component="span"
+                      sx={getPersonaRoleChipSxFromValora(rolOpciones.find((o) => o.value === role)?.valora)}
+                    >
                       {role}
                     </Box>
                   ))}

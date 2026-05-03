@@ -1,11 +1,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getRequestErrorMessage } from "@/core/api/client";
+import { obtenerValoresGenerica } from "@/core/js/funciones.js";
 import { useAuth } from "@/core/auth/useAuth";
 import { useSnackbar } from "@/shared/context/SnackbarContext";
+import type { ValorGenerica, ValorGenericaListado } from "@/modules/genericas/types/genericas.types";
 import { createPersonaRequest, deletePersonaRequest, listPersonasRequest, updatePersonaRequest } from "@/modules/persona/api/personaApi";
-import { PERSONA_ROWS_PER_PAGE } from "@/modules/persona/constants/personaSeedData";
-import type { PersonaFormValues, PersonaPayload, PersonaSummary } from "@/modules/persona/types/persona.types";
-import { parsePersonaSummaryToFormValues, personaRolesFromSummary } from "@/modules/persona/utils/personaMappers";
+import { PERSONA_ROWS_PER_PAGE, ROLES_PERSONA, TIPO_IDENTIFICACION } from "@/modules/persona/constants/personaConstants";
+import type { PersonaFormValues, PersonaPayload, PersonaRolOption, PersonaSummary, PersonaTipoIdentificacionOption } from "@/modules/persona/types/persona.types";
+import {
+  mapValorGenericaToRolPersona,
+  parsePersonaSummaryToFormValues,
+  personaRolesFromSummary,
+  mapValorGenericaToTipoIdentificacion,
+} from "@/modules/persona/utils/personaMappers";
 
 export function usePersonaPage() {
   const { showSuccess, showError } = useSnackbar();
@@ -23,6 +30,10 @@ export function usePersonaPage() {
   const [filterEstado, setFilterEstado] = useState("todos");
   const [searchQuery, setSearchQuery] = useState("");
   const [tablePage, setTablePage] = useState(1);
+  const [rolOpciones, setRolOpciones] = useState<PersonaRolOption[]>([]);
+  const [rolesCatalogLoading, setRolesCatalogLoading] = useState(true);
+  const [tipoIdentificacionOpciones, setTipoIdentificacionOpciones] = useState<PersonaTipoIdentificacionOption[]>([]);
+  const [tipoIdentificacionCatalogLoading, setTipoIdentificacionCatalogLoading] = useState(true);  
   const detailFetchGenerationRef = useRef(0);
   const advanceDetailGeneration = useCallback(() => ++detailFetchGenerationRef.current, []);
 
@@ -48,6 +59,66 @@ export function usePersonaPage() {
     };
 
     void load();
+    return () => {
+      cancelled = true;
+    };
+  }, [showError]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setRolesCatalogLoading(true);
+    setTipoIdentificacionCatalogLoading(true);
+
+    void (async () => {
+      try {
+        const [valoresRolesRaw, valoresTipoIdentificacion] = await Promise.all([
+          obtenerValoresGenerica(ROLES_PERSONA),
+          obtenerValoresGenerica(TIPO_IDENTIFICACION),
+        ]);
+        if (cancelled) return;
+        const valores = valoresRolesRaw as ValorGenericaListado[];
+
+        const opcionesTipoIdentificacion: PersonaTipoIdentificacionOption[] = (valoresTipoIdentificacion as ValorGenerica[])
+          .map((v) => {
+            const value = mapValorGenericaToTipoIdentificacion({
+              nombre: v.nombre,
+              codigo: v.codigo ?? null,
+            });
+            if (!value) return null;
+            return { value, label: v.nombre };
+          })
+          .filter((item): item is PersonaTipoIdentificacionOption => item !== null);
+        setTipoIdentificacionOpciones(opcionesTipoIdentificacion);
+        const opciones: PersonaRolOption[] = valores.flatMap((v) => {
+          const value = mapValorGenericaToRolPersona({
+            nombre: v.nombre,
+            codigo: v.codigo ?? null,
+          });
+          if (!value) return [];
+          const opt: PersonaRolOption = {
+            value,
+            label: v.nombre,
+          };
+          if (v.valora != null && v.valora !== "") {
+            opt.valora = v.valora;
+          }
+          return [opt];
+        });
+        setRolOpciones(opciones);
+      } catch (error) {
+        if (!cancelled) {
+          showError(getRequestErrorMessage(error));
+          setRolOpciones([]);
+          setTipoIdentificacionOpciones([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setRolesCatalogLoading(false);
+          setTipoIdentificacionCatalogLoading(false);
+        }
+      }
+    })();
+
     return () => {
       cancelled = true;
     };
@@ -240,5 +311,10 @@ export function usePersonaPage() {
     onConfirmDelete,
     onCloseModal,
     onSavePersona,
+    rolOpciones,
+    rolesCatalogLoading,
+    tipoIdentificacionOpciones,
+    tipoIdentificacionCatalogLoading,
+    isPersonasTableReady: !isListLoading && !rolesCatalogLoading,
   };
 }

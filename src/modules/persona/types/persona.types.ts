@@ -2,6 +2,17 @@ export type TipoIdentificacion = "CC" | "CE" | "PA" | "NIT";
 
 export type RolPersona = "Administrador" | "Usuario" | "Supervisor" | "Comercial" | "Cerrador";
 
+export interface PersonaRolOption {
+  value: RolPersona;
+  label: string;
+  valora?: string | null;
+}
+
+export interface PersonaTipoIdentificacionOption{
+  value: TipoIdentificacion;
+  label: string;
+}
+
 export type EstadoPersona = "Activo" | "Inactivo";
 
 export interface ValorGenericaMiniDto {

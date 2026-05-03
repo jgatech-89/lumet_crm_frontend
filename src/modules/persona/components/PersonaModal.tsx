@@ -7,7 +7,7 @@ import {
   DescriptionOutlined,
   SettingsOutlined,
 } from '@mui/icons-material';
-import { alpha, styled } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 import { useEffect, type ReactNode } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import PhoneInput from 'react-phone-input-2';
@@ -15,8 +15,8 @@ import { isValidPhoneNumber } from 'libphonenumber-js';
 import 'react-phone-input-2/lib/style.css';
 import { CancelarBoton, GuardarBoton } from '@/shared/ui/buttons/components/BotonesAccionCrud';
 import { CustomModal } from '@/shared/ui/modal/components/CustomModal';
-import { getPersonaRoleTone } from '@/modules/persona/styles/personaPageStyles';
-import type { PersonaFormValues, PersonaPayload, RolPersona } from '@/modules/persona/types/persona.types';
+import { getPersonaAvatarHeaderSxFromValora } from '@/modules/persona/styles/personaPageStyles';
+import type { PersonaFormValues, PersonaPayload, PersonaRolOption, PersonaTipoIdentificacionOption } from '@/modules/persona/types/persona.types';
 import { getPersonaDisplayInitials } from '@/modules/persona/utils/personaMappers';
 
 const SectionHeader = ({ title, icon }: { title: string; icon?: ReactNode }) => (
@@ -81,19 +81,15 @@ const CustomInput = styled(TextField)(({ theme }) => ({
   },
 }));
 
-const avatarRoleStyles: Record<RolPersona, { tone: "primary" | "secondary" | "info" | "success" | "warning" }> = {
-  Administrador: { tone: getPersonaRoleTone("Administrador") },
-  Usuario: { tone: getPersonaRoleTone("Usuario") },
-  Supervisor: { tone: getPersonaRoleTone("Supervisor") },
-  Comercial: { tone: getPersonaRoleTone("Comercial") },
-  Cerrador: { tone: getPersonaRoleTone("Cerrador") },
-};
-
 interface Props {
   open: boolean;
   onClose: () => void;
   onSave?: (payload: PersonaPayload) => Promise<void> | void;
   personaData?: PersonaFormValues | null;
+  rolOpciones: PersonaRolOption[];
+  rolesCatalogLoading?: boolean;
+  tipoIdentificacionOpciones: PersonaTipoIdentificacionOption[];
+  tipoIdentificacionCatalogLoading?: boolean;
 }
 
 const DEFAULT_VALUES: PersonaFormValues = {
@@ -111,7 +107,16 @@ const DEFAULT_VALUES: PersonaFormValues = {
   contrato: null,
 };
 
-export const PersonaModal = ({ open, onClose, onSave, personaData }: Props) => {
+export const PersonaModal = ({
+  open,
+  onClose,
+  onSave,
+  personaData,
+  rolOpciones,
+  rolesCatalogLoading = false,
+  tipoIdentificacionOpciones,
+  tipoIdentificacionCatalogLoading = false,
+}: Props) => {
   const isEdit = Boolean(personaData);
   const {
     control,
@@ -119,6 +124,8 @@ export const PersonaModal = ({ open, onClose, onSave, personaData }: Props) => {
     trigger,
     watch,
     reset,
+    setValue,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<PersonaFormValues>({
     mode: 'onBlur',
@@ -134,7 +141,8 @@ export const PersonaModal = ({ open, onClose, onSave, personaData }: Props) => {
   const avatarInitials = getPersonaDisplayInitials(
     [primerNombreValue, segundoNombreValue, primerApellidoValue, segundoApellidoValue].join(' '),
   );
-  const avatarStyle = avatarRoleStyles[rolesValue?.[0] ?? 'Administrador'] ?? avatarRoleStyles.Administrador;
+  const primaryRole = rolesValue?.[0] ?? 'Administrador';
+  const headerRoleValora = rolOpciones.find((o) => o.value === primaryRole)?.valora;
 
   useEffect(() => {
     if (!open) return;
@@ -150,6 +158,29 @@ export const PersonaModal = ({ open, onClose, onSave, personaData }: Props) => {
 
     reset(DEFAULT_VALUES);
   }, [open, personaData, reset]);
+
+  useEffect(() => {
+    if (!open || personaData || rolesCatalogLoading || rolOpciones.length === 0) return;
+
+    const allowed = new Set(rolOpciones.map((o) => o.value));
+    const roles = getValues('roles');
+    const filtered = roles.filter((r) => allowed.has(r));
+    const next = filtered.length > 0 ? filtered : [rolOpciones[0].value];
+    if (next.join(',') !== roles.join(',')) {
+      setValue('roles', next, { shouldValidate: true });
+    }
+  }, [open, personaData, rolesCatalogLoading, rolOpciones, getValues, setValue]);
+
+  useEffect(() => {
+    if (!open || personaData || tipoIdentificacionCatalogLoading || tipoIdentificacionOpciones.length === 0) return;
+
+    const allowed = new Set(tipoIdentificacionOpciones.map((o) => o.value));
+    const tipo = getValues('tipoIdentificacion');
+    const next = allowed.has(tipo) ? tipo : tipoIdentificacionOpciones[0].value;
+    if (next !== tipo) {
+      setValue('tipoIdentificacion', next, { shouldValidate: true });
+    }
+  }, [open, personaData, tipoIdentificacionCatalogLoading, tipoIdentificacionOpciones, getValues, setValue]);
 
   const handleClose = () => {
     reset(DEFAULT_VALUES);
@@ -201,16 +232,7 @@ export const PersonaModal = ({ open, onClose, onSave, personaData }: Props) => {
           </Typography>
         )}
       headerIcon={isEdit ? (
-        <Avatar
-          sx={(theme) => ({
-            width: 34,
-            height: 34,
-            bgcolor: alpha(theme.palette[avatarStyle.tone].main, theme.palette.mode === "dark" ? 0.24 : 0.12),
-            color: `${avatarStyle.tone}.main`,
-            fontSize: '0.82rem',
-            fontWeight: 600,
-          })}
-        >
+        <Avatar sx={getPersonaAvatarHeaderSxFromValora(headerRoleValora)}>
           {avatarInitials}
         </Avatar>
       ) : undefined}
@@ -327,12 +349,21 @@ export const PersonaModal = ({ open, onClose, onSave, personaData }: Props) => {
                   size="small"
                   select
                   label="Tipo de identificación"
+                  disabled={tipoIdentificacionCatalogLoading || tipoIdentificacionOpciones.length === 0}
                   slotProps={{ inputLabel: { shrink: true }, select: { IconComponent: KeyboardArrowDown } }}
+                  helperText={
+                    tipoIdentificacionCatalogLoading
+                      ? 'Cargando tipos de identificación…'
+                      : tipoIdentificacionOpciones.length === 0
+                        ? 'No hay tipos disponibles.'
+                        : undefined
+                  }
                 >
-                  <MenuItem value="CC">CC - Cedula de ciudadania</MenuItem>
-                  <MenuItem value="CE">CE - Cedula de extranjeria</MenuItem>
-                  <MenuItem value="PA">PA - Pasaporte</MenuItem>
-                  <MenuItem value="NIT">NIT</MenuItem>
+                  {tipoIdentificacionOpciones.map((opt) => (
+                    <MenuItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </MenuItem>
+                  ))}
                 </CustomInput>
               )}
             />
@@ -542,15 +573,22 @@ export const PersonaModal = ({ open, onClose, onSave, personaData }: Props) => {
                   size="small"
                   select
                   label="Roles"
+                  disabled={rolesCatalogLoading || rolOpciones.length === 0}
                   slotProps={{ inputLabel: { shrink: true }, select: { IconComponent: KeyboardArrowDown, multiple: true } }}
                   error={!!errors.roles}
-                  helperText={errors.roles?.message}
+                  helperText={
+                    rolesCatalogLoading
+                      ? 'Cargando roles…'
+                      : rolOpciones.length === 0
+                        ? 'No hay roles disponibles.'
+                        : errors.roles?.message
+                  }
                 >
-                  <MenuItem value="Administrador">Administrador</MenuItem>
-                  <MenuItem value="Usuario">Usuario</MenuItem>
-                  <MenuItem value="Supervisor">Supervisor</MenuItem>
-                  <MenuItem value="Comercial">Comercial</MenuItem>
-                  <MenuItem value="Cerrador">Cerrador</MenuItem>
+                  {rolOpciones.map((opt) => (
+                    <MenuItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </MenuItem>
+                  ))}
                 </CustomInput>
               )}
             />

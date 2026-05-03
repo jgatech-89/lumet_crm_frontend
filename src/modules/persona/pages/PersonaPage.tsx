@@ -1,5 +1,4 @@
 import {
-  Container,
   Typography,
   Box,
   Stack,
@@ -23,7 +22,6 @@ export function PersonaPage() {
   const primaryButtonPreset = getButtonPreset("primary");
   const {
     filteredPersonas,
-    isListLoading,
     isListRefreshing,
     modalOpen,
     editingPersona,
@@ -50,6 +48,11 @@ export function PersonaPage() {
     onConfirmDelete,
     onCloseModal,
     onSavePersona,
+    rolOpciones,
+    rolesCatalogLoading,
+    tipoIdentificacionOpciones,
+    tipoIdentificacionCatalogLoading,
+    isPersonasTableReady,
   } = usePersonaPage();
 
   return (
@@ -57,7 +60,7 @@ export function PersonaPage() {
       searchPlaceholder="Buscar personas..."
       onSearch={setSearchQuery}
     >
-      <Container maxWidth="lg" sx={personaPageContainerSx}>
+      <Box sx={personaPageContainerSx}>
       <Stack
         direction={{ xs: "column", sm: "row" }}
         justifyContent="space-between"
@@ -96,7 +99,7 @@ export function PersonaPage() {
         />
       </Stack>
 
-      {isListLoading ? (
+      {!isPersonasTableReady ? (
         <AppSkeleton variant="dashboard" tableRows={4} />
       ) : (
         <>
@@ -116,12 +119,22 @@ export function PersonaPage() {
               onViewDetail={onOpenDetail}
               onEdit={onOpenEdit}
               onAskDelete={onAskDelete}
+              rolOpciones={rolOpciones}
             />
           )}
         </>
       )}
 
-      <PersonaForm open={modalOpen} onClose={onCloseModal} onSave={onSavePersona} personaData={editingPersona} />
+      <PersonaForm
+        open={modalOpen}
+        onClose={onCloseModal}
+        onSave={onSavePersona}
+        personaData={editingPersona}
+        rolOpciones={rolOpciones}
+        rolesCatalogLoading={rolesCatalogLoading}
+        tipoIdentificacionOpciones={tipoIdentificacionOpciones}
+        tipoIdentificacionCatalogLoading={tipoIdentificacionCatalogLoading}
+      />
 
       <PersonaDetailModal
         open={detailOpen}
@@ -129,6 +142,7 @@ export function PersonaPage() {
         onExited={onDetailExited}
         onEdit={onEditFromDetail}
         personaData={selectedPersona}
+        rolOpciones={rolOpciones}
       />
 
       <ConfirmModal
@@ -153,7 +167,7 @@ export function PersonaPage() {
         variant="danger"
         disableBackdropClose
       />
-      </Container>
+      </Box>
     </Layout>
   );
 }

@@ -1,5 +1,4 @@
 import { Avatar, Box, Stack, Typography } from "@mui/material";
-import { alpha } from "@mui/material/styles";
 import {
   DeleteOutline as DeleteIcon,
   EditOutlined as EditIcon,
@@ -9,9 +8,9 @@ import { useMemo } from "react";
 import type { ApiPagination } from "@/core/api/types";
 import { Table } from "@/shared/ui/table";
 import type { Action, Column } from "@/shared/ui/table";
-import { PERSONA_ROWS_PER_PAGE } from "@/modules/persona/constants/personaSeedData";
-import { getPersonaRoleChipSx, getPersonaRoleTone } from "@/modules/persona/styles/personaPageStyles";
-import type { PersonaSummary } from "@/modules/persona/types/persona.types";
+import { PERSONA_ROWS_PER_PAGE } from "@/modules/persona/constants/personaConstants";
+import { getPersonaAvatarSxFromValora, getPersonaRoleChipSxFromValora } from "@/modules/persona/styles/personaPageStyles";
+import type { PersonaRolOption, PersonaSummary } from "@/modules/persona/types/persona.types";
 import { getPersonaDisplayInitials, personaRolesFromSummary } from "@/modules/persona/utils/personaMappers";
 
 interface PersonaTableProps {
@@ -21,6 +20,7 @@ interface PersonaTableProps {
   onViewDetail: (persona: PersonaSummary) => void;
   onEdit: (persona: PersonaSummary) => void;
   onAskDelete: (persona: PersonaSummary) => void;
+  rolOpciones: PersonaRolOption[];
 }
 
 export function PersonaTable({
@@ -30,7 +30,16 @@ export function PersonaTable({
   onViewDetail,
   onEdit,
   onAskDelete,
+  rolOpciones,
 }: PersonaTableProps) {
+  const valoraByRol = useMemo(() => {
+    const map = new Map<string, string | null | undefined>();
+    for (const o of rolOpciones) {
+      map.set(o.value, o.valora);
+    }
+    return map;
+  }, [rolOpciones]);
+
   const pagination = useMemo<ApiPagination>(() => {
     const total = rows.length;
     const totalPages = Math.max(1, Math.ceil(total / PERSONA_ROWS_PER_PAGE));
@@ -58,19 +67,10 @@ export function PersonaTable({
         label: "PERSONA",
         render: (persona) => {
           const mainRole = persona.rolPrincipal ?? persona.roles?.[0] ?? persona.rol ?? "Comercial";
-          const roleTone = getPersonaRoleTone(mainRole);
+          const mainValora = valoraByRol.get(mainRole);
           return (
             <Stack direction="row" spacing={2} alignItems="center">
-              <Avatar
-                sx={{
-                  bgcolor: (theme) => alpha(theme.palette[roleTone].main, theme.palette.mode === "dark" ? 0.22 : 0.12),
-                  color: `${roleTone}.main`,
-                  fontWeight: 600,
-                  fontSize: "1rem",
-                  width: 44,
-                  height: 44,
-                }}
-              >
+              <Avatar sx={getPersonaAvatarSxFromValora(mainValora)}>
                 {getPersonaDisplayInitials(persona.nombre)}
               </Avatar>
               <Box>
@@ -95,7 +95,11 @@ export function PersonaTable({
           return (
             <Stack direction="row" flexWrap="wrap" useFlexGap gap={0.5} alignItems="center">
               {rolesToShow.map((role, index) => (
-                <Box key={`${persona.id}-${role}-${index}`} component="span" sx={getPersonaRoleChipSx(role)}>
+                <Box
+                  key={`${persona.id}-${role}-${index}`}
+                  component="span"
+                  sx={getPersonaRoleChipSxFromValora(valoraByRol.get(role))}
+                >
                   {role}
                 </Box>
               ))}
@@ -140,7 +144,7 @@ export function PersonaTable({
         },
       },
     ],
-    [],
+    [valoraByRol],
   );
 
   const actions: Action<PersonaSummary>[] = useMemo(
