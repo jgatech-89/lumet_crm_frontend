@@ -4,7 +4,7 @@ import { obtenerValoresGenerica } from "@/core/js/funciones.js";
 import { useAuth } from "@/core/auth/useAuth";
 import { useSnackbar } from "@/shared/context/SnackbarContext";
 import type { ValorGenerica, ValorGenericaListado } from "@/modules/genericas/types/genericas.types";
-import { createPersonaRequest, deletePersonaRequest, listPersonasRequest, updatePersonaRequest } from "@/modules/persona/api/personaApi";
+import { createPersonaRequest, deletePersonaRequest, listPersonasRequest, updatePersonaRequest, setPasswordRequest } from "@/modules/persona/api/personaApi";
 import { PERSONA_ROWS_PER_PAGE, ROLES_PERSONA, TIPO_IDENTIFICACION } from "@/modules/persona/constants/personaConstants";
 import type { PersonaFormValues, PersonaPayload, PersonaRolOption, PersonaSummary, PersonaTipoIdentificacionOption } from "@/modules/persona/types/persona.types";
 import {
@@ -34,6 +34,9 @@ export function usePersonaPage() {
   const [rolesCatalogLoading, setRolesCatalogLoading] = useState(true);
   const [tipoIdentificacionOpciones, setTipoIdentificacionOpciones] = useState<PersonaTipoIdentificacionOption[]>([]);
   const [tipoIdentificacionCatalogLoading, setTipoIdentificacionCatalogLoading] = useState(true);  
+  const [setPasswordModalOpen, setSetPasswordModalOpen] = useState(false);
+  const [personaToSetPassword, setPersonaToSetPassword] = useState<PersonaSummary | null>(null);
+  const [isSettingPassword, setIsSettingPassword] = useState(false);
   const detailFetchGenerationRef = useRef(0);
   const advanceDetailGeneration = useCallback(() => ++detailFetchGenerationRef.current, []);
 
@@ -282,6 +285,35 @@ export function usePersonaPage() {
     [showSuccess, showError, validatePersonaPayload, fetchMe, user],
   );
 
+  const onOpenSetPassword = useCallback((persona: PersonaSummary) => {
+    setPersonaToSetPassword(persona);
+    setSetPasswordModalOpen(true);
+  }, []);
+
+  const onCloseSetPassword = useCallback(() => {
+    setSetPasswordModalOpen(false);
+    setPersonaToSetPassword(null);
+  }, []);
+
+  const onSavePassword = useCallback(
+    async (password: string, personaId: string) => {
+      if (isSettingPassword) return;
+      setIsSettingPassword(true);
+      try {
+        await setPasswordRequest(personaId, password, password);
+        showSuccess("Contraseña actualizada correctamente.");
+        setSetPasswordModalOpen(false);
+        setPersonaToSetPassword(null);
+      } catch (error) {
+        showError(getRequestErrorMessage(error));
+        throw error;
+      } finally {
+        setIsSettingPassword(false);
+      }
+    },
+    [isSettingPassword, showSuccess, showError],
+  );
+
   return {
     filteredPersonas,
     isListLoading,
@@ -315,6 +347,12 @@ export function usePersonaPage() {
     rolesCatalogLoading,
     tipoIdentificacionOpciones,
     tipoIdentificacionCatalogLoading,
+    setPasswordModalOpen,
+    personaToSetPassword,
+    isSettingPassword,
+    onOpenSetPassword,
+    onCloseSetPassword,
+    onSavePassword,
     isPersonasTableReady: !isListLoading && !rolesCatalogLoading,
   };
 }

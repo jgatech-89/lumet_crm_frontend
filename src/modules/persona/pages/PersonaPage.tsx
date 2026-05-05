@@ -15,6 +15,7 @@ import { PersonaDetailModal } from "@/modules/persona/components/PersonaDetailMo
 import { PersonaFilters } from "@/modules/persona/components/PersonaFilters";
 import { PersonaForm } from "@/modules/persona/components/PersonaForm";
 import { PersonaTable } from "@/modules/persona/components/PersonaTable";
+import { SetPasswordModal } from "@/modules/persona/components/SetPasswordModal";
 import { usePersonaPage } from "@/modules/persona/hooks/usePersonaPage";
 import { personaPageContainerSx } from "@/modules/persona/styles/personaPageStyles";
 
@@ -52,6 +53,12 @@ export function PersonaPage() {
     rolesCatalogLoading,
     tipoIdentificacionOpciones,
     tipoIdentificacionCatalogLoading,
+    setPasswordModalOpen,
+    personaToSetPassword,
+    isSettingPassword,
+    onOpenSetPassword,
+    onCloseSetPassword,
+    onSavePassword,
     isPersonasTableReady,
   } = usePersonaPage();
 
@@ -118,6 +125,7 @@ export function PersonaPage() {
               onPageChange={setTablePage}
               onViewDetail={onOpenDetail}
               onEdit={onOpenEdit}
+              onSetPassword={onOpenSetPassword}
               onAskDelete={onAskDelete}
               rolOpciones={rolOpciones}
             />
@@ -166,6 +174,14 @@ export function PersonaPage() {
         loadingText="Eliminando persona..."
         variant="danger"
         disableBackdropClose
+      />
+
+      <SetPasswordModal
+        open={setPasswordModalOpen}
+        onClose={onCloseSetPassword}
+        persona={personaToSetPassword}
+        onSave={onSavePassword}
+        isLoading={isSettingPassword}
       />
       </Box>
     </Layout>

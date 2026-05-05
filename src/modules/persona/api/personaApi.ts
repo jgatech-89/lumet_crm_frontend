@@ -49,6 +49,17 @@ export async function updatePersonaRequest(id: string, payload: PersonaPayload):
   return mapPersonaApiToSummary(data.data);
 }
 
+export async function setPasswordRequest(id: string, password: string, passwordConfirm: string): Promise<{ id: string; nombre: string }> {
+  const { data } = await apiClient.post<ApiResponse<{ id: string; nombre: string }>>(`${PERSONAS_PREFIX}/${id}/set_password/`, {
+    password,
+    password_confirm: passwordConfirm,
+  });
+  if (!data.success || data.data === null) {
+    throw new ApiRequestError(data.message, { errors: data.errors, status: 200 });
+  }
+  return data.data;
+}
+
 
 export async function deletePersonaRequest(id: string): Promise<void> {
   const { data } = await apiClient.delete<ApiResponse<null>>(`${PERSONAS_PREFIX}/${id}/`);

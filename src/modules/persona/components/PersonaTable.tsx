@@ -3,6 +3,7 @@ import {
   DeleteOutline as DeleteIcon,
   EditOutlined as EditIcon,
   VisibilityOutlined as ViewIcon,
+  LockOutlined as LockIcon,
 } from "@mui/icons-material";
 import { useMemo } from "react";
 import type { ApiPagination } from "@/core/api/types";
@@ -20,6 +21,7 @@ interface PersonaTableProps {
   onViewDetail: (persona: PersonaSummary) => void;
   onEdit: (persona: PersonaSummary) => void;
   onAskDelete: (persona: PersonaSummary) => void;
+  onSetPassword: (persona: PersonaSummary) => void;
   rolOpciones: PersonaRolOption[];
 }
 
@@ -30,6 +32,7 @@ export function PersonaTable({
   onViewDetail,
   onEdit,
   onAskDelete,
+  onSetPassword,
   rolOpciones,
 }: PersonaTableProps) {
   const valoraByRol = useMemo(() => {
@@ -155,6 +158,12 @@ export function PersonaTable({
         onClick: onViewDetail,
       },
       {
+        label: "Asignar contraseña",
+        icon: <LockIcon fontSize="small" />,
+        onClick: onSetPassword,
+        colorHex: "#F57C00",
+      },
+      {
         label: "Editar",
         icon: <EditIcon fontSize="small" />,
         onClick: onEdit,
@@ -166,7 +175,7 @@ export function PersonaTable({
         onClick: onAskDelete,
       },
     ],
-    [onViewDetail, onEdit, onAskDelete],
+    [onViewDetail, onSetPassword, onEdit, onAskDelete],
   );
 
   return (
