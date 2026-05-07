@@ -3,6 +3,12 @@ export interface AuthTokens {
   refresh: string;
 }
 
+export interface LoginResponseData {
+  requires_otp: boolean;
+  correo_auth?: string | null;
+  tokens?: AuthTokens | null;
+}
+
 /** Coincide con `ValorGenericaListSerializer` en `/auth/me/`. */
 export interface AuthUserRole {
   id: number;

@@ -6,6 +6,7 @@ import type {
   ForgotPasswordRequestPayload,
   ForgotPasswordSetPayload,
   ForgotPasswordVerifyPayload,
+  LoginResponseData,
   LoginCredentials,
   VerifyCodePayload,
 } from "../types/auth.types";
@@ -16,8 +17,8 @@ export type CorreoAuthResponse = {
 
 const AUTH_PREFIX = "/auth";
 
-export async function loginRequest(body: LoginCredentials): Promise<ApiResponse<CorreoAuthResponse>> {
-  const { data } = await apiClient.post<ApiResponse<CorreoAuthResponse>>(`${AUTH_PREFIX}/login/`, body);
+export async function loginRequest(body: LoginCredentials): Promise<ApiResponse<LoginResponseData>> {
+  const { data } = await apiClient.post<ApiResponse<LoginResponseData>>(`${AUTH_PREFIX}/login/`, body);
   return data;
 }
 

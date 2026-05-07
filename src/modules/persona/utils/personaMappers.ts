@@ -96,6 +96,7 @@ export function mapPersonaApiToSummary(dto: PersonaApiDto): PersonaSummary {
     email: dto.email,
     correoAuth: dto.correo_auth ?? "",
     telefono: dto.telefono ?? "",
+    usarPasswordAdmin: Boolean(dto.usar_password_admin),
     estado: estadoApiToUi(dto.estado),
     sourceApi: dto,
   };
@@ -119,6 +120,7 @@ export function mapApiDtoToFormValues(dto: PersonaApiDto): PersonaFormValues {
     correo: dto.email,
     correoAuth: dto.correo_auth ?? "",
     telefono: dto.telefono ?? "",
+    usarPasswordAdmin: Boolean(dto.usar_password_admin),
     roles: rolesFinal,
     estado: estadoApiToUi(dto.estado),
     contrato: null,
@@ -152,6 +154,7 @@ export function parsePersonaSummaryToFormValues(persona: PersonaSummary): Person
     correo: persona.email,
     correoAuth: persona.correoAuth ?? "",
     telefono: persona.telefono,
+    usarPasswordAdmin: Boolean(persona.usarPasswordAdmin),
     roles: resolvedRoles,
     estado: persona.estado,
     contrato: null,
@@ -168,6 +171,7 @@ export function buildPersonaWriteBody(payload: PersonaPayload): Record<string, u
     email: payload.correo,
     correo_auth: payload.correoAuth.trim() || null,
     telefono: payload.telefono || null,
+    usar_password_admin: Boolean(payload.usarPasswordAdmin),
     identificacion: payload.numeroIdentificacion,
     estado: estadoUiToApi(payload.estado),
     tipo_identificacion_codigo: tipoUiToCodigoParaApi(payload.tipoIdentificacion),
@@ -196,6 +200,7 @@ export function buildPersonaSummaryFromPayload(
     email: payload.correo,
     correoAuth: payload.correoAuth,
     telefono: payload.telefono,
+    usarPasswordAdmin: payload.usarPasswordAdmin,
     estado: payload.estado,
   };
 }

@@ -239,10 +239,10 @@ export function usePersonaPage() {
     if (!payload.roles?.length) {
       return "Debe seleccionar al menos un rol.";
     }
-    if (!payload.correoAuth?.trim()) {
+    if (!payload.usarPasswordAdmin && !payload.correoAuth?.trim()) {
       return "El correo auth es obligatorio.";
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.correoAuth.trim())) {
+    if (!payload.usarPasswordAdmin && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.correoAuth.trim())) {
       return "Debe ingresar un correo auth válido.";
     }
     if (!/^\+[1-9]\d{6,14}$/.test(payload.telefono.replace(/\s+/g, ""))) {

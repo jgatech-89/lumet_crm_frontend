@@ -33,6 +33,7 @@ export interface PersonaApiDto {
   email: string;
   correo_auth: string | null;
   telefono: string | null;
+  usar_password_admin: boolean;
   roles: ValorGenericaMiniDto[];
   estado: string;
   verificado: boolean;
@@ -50,6 +51,7 @@ export interface PersonaSummary {
   email: string;
   correoAuth: string;
   telefono: string;
+  usarPasswordAdmin: boolean;
   estado: EstadoPersona;
   sourceApi?: PersonaApiDto;
 }
@@ -65,6 +67,7 @@ export interface PersonaFormValues {
   correo: string;
   correoAuth: string;
   telefono: string;
+  usarPasswordAdmin: boolean;
   roles: RolPersona[];
   estado: EstadoPersona;
   contrato: File | null;
@@ -81,6 +84,7 @@ export interface PersonaPayload {
   correo: string;
   correoAuth: string;
   telefono: string;
+  usarPasswordAdmin: boolean;
   roles: RolPersona[];
   estado: EstadoPersona;
   contrato?: File;

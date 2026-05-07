@@ -105,6 +105,18 @@ export function useLoginScreen() {
       setCredentialLoading(true);
       try {
         const res = await loginRequest(data);
+        const requiresOtp = res.data?.requires_otp !== false;
+        if (!requiresOtp) {
+          const tokens = res.data?.tokens;
+          if (!tokens?.access || !tokens?.refresh) {
+            showAuthError("No se pudieron obtener los tokens de sesión.");
+            return;
+          }
+          await login(tokens);
+          showSuccess(res.message || "Sesión iniciada");
+          navigate("/", { replace: true });
+          return;
+        }
         const masked = res.data?.correo_auth?.trim() ?? "";
         if (masked) setLoginCorreoAuthDisplay(masked);
         showSuccess(res.message || "Código enviado");
@@ -117,7 +129,7 @@ export function useLoginScreen() {
         setCredentialLoading(false);
       }
     },
-    [dismissAuthAlert, goToOtp, showAuthError, showSuccess],
+    [dismissAuthAlert, goToOtp, login, navigate, showAuthError, showSuccess],
   );
 
   const submitOtp = useCallback(

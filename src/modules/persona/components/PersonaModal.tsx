@@ -1,5 +1,5 @@
 import {
-  Grid, TextField, MenuItem, Typography, Box, Avatar, FormControl, FormHelperText, InputLabel
+  Grid, TextField, MenuItem, Typography, Box, Avatar, FormControl, FormHelperText, InputLabel, FormControlLabel, Checkbox
 } from '@mui/material';
 import {
   KeyboardArrowDown,
@@ -102,6 +102,7 @@ const DEFAULT_VALUES: PersonaFormValues = {
   correo: '',
   correoAuth: '',
   telefono: '',
+  usarPasswordAdmin: false,
   roles: ['Administrador'],
   estado: 'Activo',
   contrato: null,
@@ -137,6 +138,7 @@ export const PersonaModal = ({
   const primerApellidoValue = watch('primerApellido');
   const segundoApellidoValue = watch('segundoApellido');
   const rolesValue = watch('roles');
+  const usarPasswordAdminValue = watch('usarPasswordAdmin');
 
   const avatarInitials = getPersonaDisplayInitials(
     [primerNombreValue, segundoNombreValue, primerApellidoValue, segundoApellidoValue].join(' '),
@@ -200,6 +202,7 @@ export const PersonaModal = ({
       correo: values.correo.trim().toLowerCase(),
       correoAuth: values.correoAuth.trim().toLowerCase(),
       telefono: normalizedPhone,
+      usarPasswordAdmin: Boolean(values.usarPasswordAdmin),
       roles: values.roles,
       estado: values.estado,
       ...(values.contrato ? { contrato: values.contrato } : {}),
@@ -529,8 +532,8 @@ export const PersonaModal = ({
               name="correoAuth"
               control={control}
               rules={{
-                required: "El correo auth es obligatorio",
                 validate: (value) => {
+                  if (usarPasswordAdminValue) return true;
                   const normalized = (value ?? "").trim();
                   if (!normalized) return "El correo auth es obligatorio";
                   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized) || "Ingresa un correo auth válido";
@@ -551,9 +554,14 @@ export const PersonaModal = ({
                   size="small"
                   label="Correo auth"
                   placeholder="auth@lumet.pro"
+                  disabled={Boolean(usarPasswordAdminValue)}
                   slotProps={{ inputLabel: { shrink: true } }}
                   error={!!errors.correoAuth}
-                  helperText={errors.correoAuth?.message ? String(errors.correoAuth.message) : ""}
+                  helperText={
+                    usarPasswordAdminValue
+                      ? 'No requerido en modo administrador.'
+                      : errors.correoAuth?.message ? String(errors.correoAuth.message) : ''
+                  }
                 />
               )}
             />
@@ -613,6 +621,37 @@ export const PersonaModal = ({
               )}
             />
           </Grid>
+
+          {isEdit ? (
+            <Grid size={{ xs: 12 }}>
+              <Controller
+                name="usarPasswordAdmin"
+                control={control}
+                render={({ field }) => (
+                  <FormControlLabel
+                    control={(
+                      <Checkbox
+                        checked={Boolean(field.value)}
+                        onChange={(event) => field.onChange(event.target.checked)}
+                      />
+                    )}
+                    label={(
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                          Usar contraseña de administrador
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Al activar esta opción, el usuario iniciará sesión con su correo y número de identificación,
+                          y no se solicitará código OTP.
+                        </Typography>
+                      </Box>
+                    )}
+                    sx={{ m: 0, alignItems: 'flex-start' }}
+                  />
+                )}
+              />
+            </Grid>
+          ) : null}
 
         </Grid>
 
